@@ -64,18 +64,27 @@ namespace IpWebCam3.Helpers
 
         private static void WriteToLogFile(string fileName, string text)
         {
+            string logFileName = GetTodaysLogFileName(fileName);
+
             try
             {
                 lock (LockFileWrite)
                 {
                     string dateTime = _dateTimeHelper.GetCurrentTimeAsString(includeMilliseconds: true);
                     text = dateTime + "," + text;
-
-                    string logFileName = GetTodaysLogFileName(fileName);
-
                     File.AppendAllText(logFileName, text + Environment.NewLine);
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+                string directoryName = Path.GetDirectoryName(logFileName);
+                if (!string.IsNullOrWhiteSpace(directoryName))
+                {
+                    Directory.CreateDirectory(directoryName);
+                    File.AppendAllText(logFileName, text + Environment.NewLine);
+                }
+            }
+
             catch (Exception e)
             {
                 Console.WriteLine(e);
@@ -86,8 +95,11 @@ namespace IpWebCam3.Helpers
         // There will be one log file per day
         private static string GetTodaysLogFileName(string fileName)
         {
-            return fileName.Replace(".txt",
-                _dateTimeHelper.GetDateTimeNow().ToString("_yyyy-MM-dd") + ".txt");
+            lock (LockFileWrite)
+            {
+                return fileName.Replace(".txt",
+                    _dateTimeHelper.GetDateTimeNow().ToString("_yyyy-MM-dd") + ".txt");
+            }
         }
     }
 }
