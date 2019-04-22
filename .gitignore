@@ -5,7 +5,7 @@
 web.config
 
 # Log files
-#IpWebCam3/App_Data/logs/*.*
+IpWebCam3/App_Data/logs/*.*
 
 # Captured Images
 IpWebCam3/outputimages/*.*
