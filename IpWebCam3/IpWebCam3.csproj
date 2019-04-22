@@ -102,7 +102,6 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\BaseApiController.cs" />
     <Compile Include="Controllers\ImageController.cs" />
-    <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\PtzController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -118,7 +117,6 @@
     <Compile Include="Models\CameraConnectionInfo.cs" />
     <Compile Include="Models\ImageInfo.cs" />
     <Compile Include="Models\CacheUpdaterInfo.cs" />
-    <Compile Include="Models\Product.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\HttpBasicAuthenticationBypassService.cs" />
     <Compile Include="Services\ImageCachingService.cs" />
