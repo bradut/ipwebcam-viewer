@@ -4,6 +4,9 @@
 # Configuration files [Bradut]
 web.config
 
+# Log files
+IpWebCam3/App_Data/logs/*.*
+
 # User-specific files
 *.suo
 *.user

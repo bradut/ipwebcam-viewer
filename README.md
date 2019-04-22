@@ -1,7 +1,7 @@
 # ipwebcam-viewer
 Web Viewer for my IP WebCam: PZT, C#
 
-This project allows viewing read-time images from an IP WebCam.
+This project allows viewing real-time images from an IP WebCam.
 
 Features (2019-04-22):
 - Fetches jpeg images from camera (not video streaming yet)
