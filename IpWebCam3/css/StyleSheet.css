@@ -1,0 +1,35 @@
+﻿/*body {
+}*/
+
+/** {
+	margin: 0;
+	padding: 0;
+}*/
+
+/*https://stackoverflow.com/questions/20590239/maintain-aspect-ratio-of-div-but-fill-screen-width-and-height-in-css*/
+#mainDiv {
+	width: 100vw;
+	height: 56.25vw; /* 100/56.25 = 1.778 */
+	background: transparent;
+	max-height: 100vh;
+	max-width: 177.78vh; /* 16/9 = 1.778 */
+	margin: auto;
+	position: absolute;
+	top: 0;
+	/*bottom: 0;*/ /* vertical center */
+	left: 0;
+	right: 0; /* horizontal center */
+}
+
+.menuOverTheImage {
+    float: left;
+    position: absolute;
+    left: auto;
+    top: auto;
+    bottom: 5%;
+    z-index: 1000;
+    background-color: transparent;
+    padding: 5px;
+    color: #FFFFFF;
+    font-weight: bold;
+}

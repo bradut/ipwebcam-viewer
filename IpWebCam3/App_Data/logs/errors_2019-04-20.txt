@@ -1,0 +1,2 @@
+2019-04-20 01:09:20.881,192.168.1.10,-2122953968,GetImage(): Unable to connect to the remote server
+2019-04-20 19:30:59.953,192.168.1.10,162178610,GetImage(): Unable to connect to the remote server

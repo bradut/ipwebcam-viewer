@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>WebCam Vancouver</title>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="css/StyleSheet.css?2019-04-15" />
+</head>
+
+<body onload="load()">
+
+    <div id="mainDiv">
+        <!--"buttonDivOut"-->
+        <div id="imageDiv" style="width: 95%; margin-left: auto; margin-right: auto; margin-top: 0px;">
+
+            <div id="ipcam_ptz_dir" class="menuOverTheImage">
+                <table width="auto" cellspacing="0" border="0" align="center">
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <a onmouseout=""
+                                    onmouseover=""
+                                    onmousedown="ptzCmdSubmit('up')"
+                                    onmouseup="ptzCmdSubmit('stop')">
+                                    <img src="images/ptzUp.png" name="up" id="up" alt="up" width="38" height="38" border="0">
+                                </a>
+                            </td>
+                            <td>
+                                <a
+                                    onmousedown="ptzCmdSubmit('zoomin')"
+                                    onmouseup="ptzCmdSubmit('stop')">
+                                    <img src="images/ptzZoomIn.png"></a></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a onmouseout=""
+                                    onmousedown="ptzCmdSubmit('left')"
+                                    onmouseup="ptzCmdSubmit('stop')"
+                                    onmouseover="">
+                                    <img src="images/ptzLeft.png" name="left" id="left" alt="left" width="38" height="38" border="0">
+                                </a></td>
+                            <td>
+                                <!-- onmousedown="ptzcmdSubmit('home')"-->
+                                <a onclick="ptzCmdSubmit('goto', 'preset', '-number=0')">
+                                    <img src="images/ptzStartPoint.png" name="home" id="center" alt="center" width="38" height="38" border="0">
+                                </a></td>
+                            <td>
+                                <a onmouseout=""
+                                    onmousedown="ptzCmdSubmit('right')"
+                                    onmouseup="ptzCmdSubmit('stop')"
+                                    onmouseover="">
+                                    <img src="images/ptzRight.png" name="right" id="right" alt="right" width="38" height="38" border="0">
+                                </a></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <a onmouseout=""
+                                    onmousedown="ptzCmdSubmit('down')"
+                                    onmouseup="ptzCmdSubmit('stop')"
+                                    onmouseover="">
+                                    <img src="images/ptzDown.png" name="down" id="down" alt="down" width="38" height="38" border="0">
+                                </a></td>
+                            <td>
+
+                                <a
+                                    onmousedown="ptzCmdSubmit('zoomout')"
+                                    onmouseup="ptzCmdSubmit('stop')">
+                                    <img src="images/ptzZoomOut.png">
+                                </a>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <img id="img1" border="0" alt="WebCam Image" src="images/earth_hd_2.jpg" title="" style="width: 100%" />
+
+            <div id="buttonDivOut" style="text-align: center; visibility: visible;">
+                <div id="buttonDiv" style="margin-left: auto; margin-right: auto;">
+
+                    <input type="button" value="⇈" name="B3" onclick="ptzUpSubmit()" />
+                    <input type="button" value="⇊" name="B2" onclick="ptzDownSubmit()" />
+
+                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+                    <input type="button" value="⇇" name="B1" onclick="ptzLeftSubmit()" />
+                    <input type="button" value="⇉" name="B0" onclick="ptzRightSubmit()" />
+
+                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+                    <input type="button" value="&#43;" name="B0" onclick="ptzZoomIn()" />
+                    <input type="button" value="&#8722;" name="B0" onclick="ptzZoomOut()" />
+
+                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+                    <button type="button" name="B4" onclick="location.reload()">
+                        Refresh
+                    <!--<script type="text/javascript">document.write(str_refresh);</script>-->
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="productsDiv">
+        <div>
+            <h2>All Products</h2>
+            <ul id="products"></ul>
+        </div>
+        <div>
+            <h2>Search by ID</h2>
+            <input type="text" id="prodId" size="5" />
+            <input type="button" value="Search" onclick="find();" />
+            <p id="product" />
+        </div>
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+    <script>
+        var uri = 'api/products';
+
+        $(document).ready(function () {
+            // Send an AJAX request
+            window.$.getJSON(uri)
+                .done(function (data) {
+                    // On success, 'data' contains a list of products.
+                    window.$.each(data, function (key, item) {
+                        // Add a list item for the product.
+                        window.$('<li>', { text: formatItem(item) }).appendTo(window.$('#products'));
+                    });
+                });
+        });
+
+        function formatItem(item) {
+            return item.Name + ': $' + item.Price;
+        }
+
+        function find() {
+            var id = window.$('#prodId').val();
+            window.$.getJSON(uri + '/' + id)
+                .done(function (data) {
+                    window.$('#product').text(formatItem(data));
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    window.$('#product').text('Error: ' + err);
+                });
+        }
+
+        var img = new Image();
+        var imgObj;
+
+        var url = window.location.href; // when running on localhost
+        if (url.indexOf('index.html') > 0) {
+            url = window.location.protocol + "//" + window.location.host;
+        }
+
+        var imgSrc = url + "/api/image/";
+        var ptzUrl = url + "/api/ptz/";
+        var str_refresh = "Refresh";
+        var ptz_command = "";
+        var ptz_params = "";
+        //-----------------
+
+        function load() {
+            if (navigator.appName.indexOf("Microsoft IE Mobile") !== -1) {
+                preLoad();
+                changeSrc();
+                return;
+            }
+            startOnLoad();
+        }
+
+        function startOnLoad() {
+            img.src = imgSrc + getUtcTime();
+            img.onerror = takeError;
+            img.onload = updateImage;
+        }
+
+        // IE only
+        function preLoad() {
+            img.src = imgSrc + getUtcTime();
+        }
+
+        // IE only
+        function changeSrc() {
+            window.img1.src = img.src;
+            preLoad();
+            setTimeout(changeSrc, 3500);
+        }
+
+        function updateImage() {
+            // update image to be displayed
+            imgObj = document.getElementById('img1');
+            imgObj.src = img.src;
+
+            // load next image - will trigger update()
+            //https://stackoverflow.com/questions/10802312/display-png-image-as-response-to-jquery-ajax-request
+
+            var imgUrl = imgSrc + getUtcTime();
+            var oReq = new XMLHttpRequest();
+            oReq.open("get", imgUrl, true);
+            oReq.responseType = "blob";
+            oReq.onload = function () {
+                var blob = oReq.response;
+                var imgSrcFromBlob = URL.createObjectURL(blob);
+                img.src = imgSrcFromBlob;
+                window.URL.revokeObjectURL(imgSrc);
+            };
+            oReq.send(null);
+        }
+
+        function takeError(exception) {
+            console.log(exception);
+            img.src = imgSrc + getUtcTime();
+        }
+
+        function getUtcTime() {
+            return new Date().getTime();
+        }
+
+        function ptzUpSubmit() {
+            ptzCmdSubmit("", "ytup");
+        }
+
+        function ptzDownSubmit() {
+            ptzCmdSubmit("", "ytdown");
+        }
+
+        function ptzLeftSubmit() {
+            ptzCmdSubmit("", "ytleft");
+        }
+
+        function ptzRightSubmit() {
+            ptzCmdSubmit("", "ytright");
+        }
+
+        function ptzZoomIn() {
+            ptzCmdSubmit("", "ptzzoomin");
+        }
+
+        function ptzZoomOut() {
+            ptzCmdSubmit("", "ptzzoomout");
+        }
+
+        function ptzCmdSubmit(action, command, parameters) {
+            if (command === undefined) {
+                command = 'ptzctrl';
+                if (parameters === undefined) {
+                    const speed = 3;
+                    const stepMode = 0; // continue until action = 'stop'
+                    parameters = '-step=' + stepMode + ',-act=' + action + ',-speed=' + speed;
+                }
+            }
+
+            ptz_command = command;
+            ptz_params = parameters;
+
+            if (command === "")
+                return;
+
+            const ptzUrlWithParams = ptzUrl + getUtcTime() + "?ptz=" + ptz_command + "&prms=" + ptz_params;
+            var ptzResult;
+
+            window.$.getJSON(ptzUrlWithParams)
+                .done(function (data) {
+
+                    ptzResult = data;
+                })
+                .fail(function (jqXHR, textStatus, err) {
+
+                    ptzResult = 'Error: ' + err + ', jqXHR: ' + jqXHR + " textStatus: " + textStatus;
+                });
+
+            console.write(ptzResult);
+
+            // reset ptz data
+            ptz_command = "";
+            ptz_params = "";
+        }
+
+    </script>
+</body>
+</html>
