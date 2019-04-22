@@ -94,7 +94,7 @@ namespace IpWebCam3.Controllers
 
             return response;
         }
-        
+
         // Get image from webCam or from cache
         private byte[] GetImageAsByteArray(string userUtc)
         {
@@ -118,7 +118,7 @@ namespace IpWebCam3.Controllers
                 _lastCacheAccess = _dateTimeHelper.GetDateTimeNow();
 
                 LogAfterReadingFromCache();
-                
+
                 _imageCacheService.UpdateCachedImage(imageByteArray: imageByteArray,
                                                      userId: UserId,
                                                      timeUpdated: _lastCacheAccess);
@@ -157,7 +157,7 @@ namespace IpWebCam3.Controllers
 
 
         private static readonly object LockCanReadImageFromService = new object();
-        
+
         // Ensure that only one client is the *cache updater* which connects to the webCam.
         // The others read images only from cache (Better performance, less traffic)
         public bool CanReadImageFromService(int userId, DateTime requestTime)
@@ -226,6 +226,19 @@ namespace IpWebCam3.Controllers
             catch (Exception e)
             {
                 Logger?.LogError($"{nameof(WriteImageToFile)}(): {e.Message}");
+
+                if (e.Message.Contains("A generic error occurred in GDI+.") && File.Exists(imagePath))
+                {
+                    try
+                    {
+                        File.Delete(imagePath);
+                    }
+                    catch
+                    {
+                        //do nothing
+                    }
+
+                }
             }
         }
 
