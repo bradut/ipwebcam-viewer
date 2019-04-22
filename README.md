@@ -5,7 +5,7 @@ This project allows viewing real-time images from an IP WebCam.
 
 Features (2019-04-22):
 - Fetches jpeg images from camera (not video streaming yet)
-- Allow users to control the camera: Pan-Tilt-Zoom (PTZ)
+- Allows users to control the camera: Pan-Tilt-Zoom (PTZ)
 
 Implementation details:
 - Programming: C#/WebAPI/JavaScript
