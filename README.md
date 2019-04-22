@@ -17,6 +17,15 @@ Implementation details:
 - Camera uses Basic Authentication
 - Images are cached in order to improve performance and reduce internet traffic
 
+Note for developers:  
+When running this app first time, if your browser displays this error:
+``
+Could not find a part of the path '<....>\IpWebCam3\bin\roslyn\csc.exe'``<br/>
+Then run this in the Package Manager Console:
+``
+Update-Package Microsoft.CodeDom.Providers.DotNetCompilerPlatform -r
+``
+
 Known issues:
 - User experience with PTZ is impacted by poor internet connections
   
