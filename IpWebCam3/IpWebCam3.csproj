@@ -83,7 +83,6 @@
     <Content Include="css\StyleSheet.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="Helpers\TempStuff.txt" />
     <Content Include="images\cypress.jpg" />
     <Content Include="images\earth1.jpg" />
     <Content Include="images\earth_hd_1.jpg" />

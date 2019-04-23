@@ -211,12 +211,14 @@
                 }
             }
 
-            ptz_command = command;
-            ptz_params = parameters;
-
             if (command === "")
                 return;
 
+            if (parameters === undefined) parameters = "";
+
+            ptz_command = command;
+            ptz_params = parameters;
+            
             const ptzUrlWithParams = ptzUrl + getUtcTime() + "?ptz=" + ptz_command + "&prms=" + ptz_params;
             var ptzResult;
 
