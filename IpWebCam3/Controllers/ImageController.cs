@@ -207,21 +207,21 @@ namespace IpWebCam3.Controllers
         {
             return
                 _dateTimeHelper.DateTimeNow.Second >= 00 && // provide an interval to avoid
-                _dateTimeHelper.DateTimeNow.Second <= 03;
-            //&& // missing the exact 00 seconds
-            //(
-            //    _dateTimeHelper.DateTimeNow.Minute == 00 ||
-            //    _dateTimeHelper.DateTimeNow.Minute == 15 ||
-            //    _dateTimeHelper.DateTimeNow.Minute == 30 ||
-            //    _dateTimeHelper.DateTimeNow.Minute == 45);
+                _dateTimeHelper.DateTimeNow.Second <= 03 // missing time ending in '00' seconds
+            &&
+            (
+                _dateTimeHelper.DateTimeNow.Minute == 00 ||
+                _dateTimeHelper.DateTimeNow.Minute == 15 ||
+                _dateTimeHelper.DateTimeNow.Minute == 30 ||
+                _dateTimeHelper.DateTimeNow.Minute == 45);
         }
 
         private void WriteImageToFile(Image image, DateTime dateTime, bool roundSecondsToZero = true)
         {
             if (roundSecondsToZero && dateTime.Second != 0)
             {
-                dateTime = 
-                new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 
+                dateTime =
+                new DateTime(dateTime.Year, dateTime.Month, dateTime.Day,
                              dateTime.Hour, dateTime.Minute, 00);
             }
 
