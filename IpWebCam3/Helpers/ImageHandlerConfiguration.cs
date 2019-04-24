@@ -45,6 +45,10 @@ namespace IpWebCam3.Helpers
 
         public string LogCacheStatsPath { get; private set; }
 
+        public string SnapShotImagePath { get; set; }
+
+        public string ImageErrorLogoPath { get; set; }
+
         private ImageHandlerConfiguration()
         {
             lock (LockMutex)
@@ -85,13 +89,18 @@ namespace IpWebCam3.Helpers
 
             string logErrorsPath = System.Configuration.ConfigurationManager.AppSettings["LogErrorsPath"];
             string logUserIPsPath = System.Configuration.ConfigurationManager.AppSettings["LogUserIPsPath"];
-            string logUserPtzCmdPath = System.Configuration.ConfigurationManager.AppSettings["LogUserPtzCmdsPath"];
+            string logUserPtzCmdPath = System.Configuration.ConfigurationManager.AppSettings["LogUserPtzCmdPath"];
             string logCacheStatsPath = System.Configuration.ConfigurationManager.AppSettings["LogCacheStatsPath"];
+            string snapShotImagePath = System.Configuration.ConfigurationManager.AppSettings["SnapShotImagePath"];
+            string imageErrorLogoPath = System.Configuration.ConfigurationManager.AppSettings["ImageErrorLogoPath"];
 
             LogErrorsPath = AppRootDir + logErrorsPath;
             LogUserIPsPath = AppRootDir + logUserIPsPath;
             LogUserPtzCmdPath = AppRootDir + logUserPtzCmdPath;
             LogCacheStatsPath = AppRootDir + logCacheStatsPath;
+            SnapShotImagePath = AppRootDir + snapShotImagePath;
+            ImageErrorLogoPath = AppRootDir + imageErrorLogoPath;
         }
+
     }
 }

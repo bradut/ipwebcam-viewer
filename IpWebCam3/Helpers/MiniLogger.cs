@@ -98,7 +98,7 @@ namespace IpWebCam3.Helpers
             lock (LockFileWrite)
             {
                 return fileName.Replace(".txt",
-                    _dateTimeHelper.GetDateTimeNow().ToString("_yyyy-MM-dd") + ".txt");
+                    _dateTimeHelper.DateTimeNow.ToString("_yyyy-MM-dd") + ".txt");
             }
         }
     }

@@ -126,7 +126,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\WebDeploy Profile.pubxml" />
+    <None Include="Properties\PublishProfiles\FTPDeploy to DimaSoft.ca Profile.pubxml" />
+    <None Include="Properties\PublishProfiles\WebDeploy to DimaSoft.ca Profile.pubxml" />
+    <None Include="Properties\PublishProfiles\WebDeploy to mail2fax_ca Profile.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

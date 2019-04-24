@@ -8,7 +8,7 @@ web.config
 IpWebCam3/App_Data/logs/*.*
 
 # Captured Images
-IpWebCam3/outputimages/*.*
+IpWebCam3/App_Data/outputimages/*.*
 
 # User-specific files
 *.suo

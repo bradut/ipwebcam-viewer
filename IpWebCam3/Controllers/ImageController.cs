@@ -6,7 +6,6 @@ using IpWebCam3.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -29,19 +28,19 @@ namespace IpWebCam3.Controllers
         private readonly CacheUpdaterInfo _cacheUpdater = new CacheUpdaterInfo();
         private readonly IDateTimeHelper _dateTimeHelper = new DateTimeHelper();
 
-        private DateTime _lastCacheAccess;
+        private DateTime _lastImageAccess;
 
         private readonly int _cacheUpdaterExpirationMilliSec;
 
         // ToDo: Use DI to inject these values
         public ImageController()
         {
-            string imageErrorLogoUrl = _configuration.AppRootDir + @"/images/earth_hd_1.jpg";
-            string snapshotImagePath = _configuration.AppRootDir + "/outputImages/";
+            string imageErrorLogoPath = _configuration.ImageErrorLogoPath;
+            string snapshotImagePath = _configuration.SnapShotImagePath;
 
             _connectionInfo = _configuration.CameraConnectionInfo;
 
-            _imageErrorLogoUrl = imageErrorLogoUrl;
+            _imageErrorLogoUrl = imageErrorLogoPath;
             _snapshotImagePath = snapshotImagePath;
 
             _cacheUpdaterExpirationMilliSec = 600;
@@ -54,7 +53,7 @@ namespace IpWebCam3.Controllers
 
             _imageCacheService = imageCacheService;
             _imageProviderService = imageProviderService;
-            _lastCacheAccess = _dateTimeHelper.GetDateTimeNow();
+            _lastImageAccess = _dateTimeHelper.DateTimeNow;
 
             AddConnectedUser();
         }
@@ -84,11 +83,11 @@ namespace IpWebCam3.Controllers
             return response;
         }
 
-        private static HttpResponseMessage CreateImageResponseMessage(byte[] imgData)
+        private static HttpResponseMessage CreateImageResponseMessage(byte[] imageByteArray)
         {
-            if (imgData == null) return null;
+            if (imageByteArray == null) return null;
 
-            var memoryStream = new MemoryStream(imgData);
+            var memoryStream = new MemoryStream(imageByteArray);
             var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(memoryStream) };
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
 
@@ -98,31 +97,31 @@ namespace IpWebCam3.Controllers
         // Get image from webCam or from cache
         private byte[] GetImageAsByteArray(string userUtc)
         {
-            _imageCacheService.WaitBeforeGettingNextImage(userId: UserId, timeRequested: _lastCacheAccess);
+            _imageCacheService.WaitBeforeGettingNextImage(userId: UserId, timeRequested: _lastImageAccess);
 
-            DateTime requestTime = _dateTimeHelper.GetDateTimeNow();
+            DateTime requestTime = _dateTimeHelper.DateTimeNow;
             byte[] imageByteArray = _imageCacheService.GetImageAsByteArray(userId: UserId, timeRequested: requestTime);
 
             if (imageByteArray != null)
             {
-                _lastCacheAccess = _dateTimeHelper.GetDateTimeNow();
+                _lastImageAccess = _dateTimeHelper.DateTimeNow;
 
                 return imageByteArray;
             }
 
             if (CanReadImageFromService(UserId, requestTime))
             {
-                LogBeforeReadingFromCache(requestTime);
+                LogBeforeReadingFromService(requestTime);
 
                 imageByteArray = GetImageAsByteArrayFromService(userUtc);
-                _lastCacheAccess = _dateTimeHelper.GetDateTimeNow();
+                _lastImageAccess = _dateTimeHelper.DateTimeNow;
 
-                LogAfterReadingFromCache();
+                LogAfterReadingFromService();
 
                 _imageCacheService.UpdateCachedImage(imageByteArray: imageByteArray,
                                                      userId: UserId,
-                                                     timeUpdated: _lastCacheAccess);
-                LogReadingDuration(requestTime);
+                                                     timeUpdated: _lastImageAccess);
+                LogDurationReadingFromService(requestTime);
             }
             else
             {
@@ -201,45 +200,34 @@ namespace IpWebCam3.Controllers
                 return;
 
             Image image = ImageHelper.ConvertByteArrayToImage(imageAsBytes);
-            WriteImageToFile(image);
+            WriteImageToFile(image, _dateTimeHelper.DateTimeNow);
         }
 
-        private static bool IsTimeToWriteAPicture()
+        private bool IsTimeToWriteAPicture()
         {
             return
-                DateTime.Now.Second == 0 &&
-                (
-                    DateTime.Now.Minute == 00 ||
-                    DateTime.Now.Minute == 15 ||
-                    DateTime.Now.Minute == 30 ||
-                    DateTime.Now.Minute == 45);
+                _dateTimeHelper.DateTimeNow.Second >= 00 && // provide an interval to avoid
+                _dateTimeHelper.DateTimeNow.Second <= 03;
+            //&& // missing the exact 00 seconds
+            //(
+            //    _dateTimeHelper.DateTimeNow.Minute == 00 ||
+            //    _dateTimeHelper.DateTimeNow.Minute == 15 ||
+            //    _dateTimeHelper.DateTimeNow.Minute == 30 ||
+            //    _dateTimeHelper.DateTimeNow.Minute == 45);
         }
 
-        private void WriteImageToFile(Image image)
+        private void WriteImageToFile(Image image, DateTime dateTime, bool roundSecondsToZero = true)
         {
-            string dateTimeCompact = _dateTimeHelper.GetCurrentTimeAsCompactString();
-            string imagePath = _snapshotImagePath + "img_" + dateTimeCompact + ".jpg";
-            try
+            if (roundSecondsToZero && dateTime.Second != 0)
             {
-                image.Save(imagePath, ImageFormat.Jpeg);
+                dateTime = 
+                new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 
+                             dateTime.Hour, dateTime.Minute, 00);
             }
-            catch (Exception e)
-            {
-                Logger?.LogError($"{nameof(WriteImageToFile)}(): {e.Message}");
 
-                if (e.Message.Contains("A generic error occurred in GDI+.") && File.Exists(imagePath))
-                {
-                    try
-                    {
-                        File.Delete(imagePath);
-                    }
-                    catch
-                    {
-                        //do nothing
-                    }
+            string dateTimeCompact = DateTimeFormatter.ConvertTimeToCompactString(dateTime, false);
 
-                }
-            }
+            ImageHelper.WriteImageToFile(image, _snapshotImagePath, dateTimeCompact, Logger);
         }
 
 
@@ -283,29 +271,29 @@ namespace IpWebCam3.Controllers
         {
             string statusMessage = "From cache  . OLD IMAGE until cache is updated" +
                                    " Requested by = userId: " + UserId
-                                   + ", LastUpdate: " + DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true);
+                                   + ", LastUpdate: " + DateTimeFormatter.ConvertTimeToCompactString(_lastImageAccess, true);
             Logger?.LogCacheStat(statusMessage);
         }
 
-        private void LogBeforeReadingFromCache(DateTime requestTime)
+        private void LogBeforeReadingFromService(DateTime requestTime)
         {
             Logger?.LogCacheStat(
                 "[1]--Start  reading image from source. UserId: " + UserId + ", time: " +
                 DateTimeFormatter.ConvertTimeToCompactString(requestTime, true));
         }
 
-        private void LogAfterReadingFromCache()
+        private void LogAfterReadingFromService()
         {
             Logger?.LogCacheStat(
                 "[2]--Finish reading image from source. UserId: " + UserId + ", time: " +
-                DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true));
+                DateTimeFormatter.ConvertTimeToCompactString(_lastImageAccess, true));
         }
 
-        private void LogReadingDuration(DateTime requestTime)
+        private void LogDurationReadingFromService(DateTime requestTime)
         {
             Logger?.LogCacheStat("[3]--Duration for userId " + UserId +
                                     " to retrieve image from source and update cache [milliseconds] = "
-                                    + (long)_lastCacheAccess.Subtract(requestTime).TotalMilliseconds);
+                                    + (long)_lastImageAccess.Subtract(requestTime).TotalMilliseconds);
         }
     }
 }

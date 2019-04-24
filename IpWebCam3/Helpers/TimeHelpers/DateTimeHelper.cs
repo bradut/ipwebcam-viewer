@@ -4,7 +4,7 @@ namespace IpWebCam3.Helpers.TimeHelpers
 {
     public interface IDateTimeHelper
     {
-        DateTime GetDateTimeNow();
+        DateTime DateTimeNow { get; }
 
         string GetCurrentTimeAsString(bool includeMilliseconds = false);
 
@@ -13,19 +13,19 @@ namespace IpWebCam3.Helpers.TimeHelpers
 
     public class DateTimeHelper: IDateTimeHelper
     {
-        public  DateTime GetDateTimeNow()
+        public DateTime DateTimeNow
         {
-            return DateTime.Now;
+            get { return DateTime.Now; }
         }
 
         public string GetCurrentTimeAsString(bool includeMilliseconds = false)
         {
-           return DateTimeFormatter.ConvertTimeToString(GetDateTimeNow(), includeMilliseconds);
+           return DateTimeFormatter.ConvertTimeToString(DateTimeNow, includeMilliseconds);
         }
 
         public string GetCurrentTimeAsCompactString(bool includeMilliseconds = false)
         {
-            return DateTimeFormatter.ConvertTimeToCompactString(GetDateTimeNow(), includeMilliseconds);
+            return DateTimeFormatter.ConvertTimeToCompactString(DateTimeNow, includeMilliseconds);
         }
     }
 }
