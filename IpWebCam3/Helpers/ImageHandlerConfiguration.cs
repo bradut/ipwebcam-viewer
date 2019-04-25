@@ -99,7 +99,7 @@ namespace IpWebCam3.Helpers
             string logUserPtzCmdPath = System.Configuration.ConfigurationManager.AppSettings["LogUserPtzCmdPath"];
             string logCacheStatsPath = System.Configuration.ConfigurationManager.AppSettings["LogCacheStatsPath"];
             string snapShotImagePath = System.Configuration.ConfigurationManager.AppSettings["SnapShotImagePath"];
-            string imageErrorLogoPath = System.Configuration.ConfigurationManager.AppSettings["ImageErrorLogoPath"];
+            string imageErrorLogoPath = System.Configuration.ConfigurationManager.AppSettings["ErrorImagePath"];
 
             ErrorsLogPath = AppRootDir + (logErrorsPath ?? @"\App_Data\logs\errors.txt");
             UserIPsLogPath = AppRootDir + (logUserIPsPath ?? @"\App_Data\logs\userIps.txt");
