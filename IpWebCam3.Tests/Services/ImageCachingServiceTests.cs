@@ -130,7 +130,6 @@ namespace IpWebCam3.Tests.Services
             int waitTimeMilliSec = cachingService.WaitBeforeGettingNextImage(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
 
             // Assert
-            //Assert.That(expectedWaitTimeMilliSec, Is.EqualTo(timeToWait)); // Validate testing parameters
             Assert.That(waitTimeMilliSec, Is.EqualTo(expectedWaitTimeMilliSec));
 
             Assert.That(waitTimeMilliSec, Is.LessThanOrEqualTo(fpsTimeBetweenTwoFramesMilliSec));
