@@ -113,7 +113,7 @@
     <Compile Include="Helpers\HttpContextHelper.cs" />
     <Compile Include="Helpers\ImageHandlerConfiguration.cs" />
     <Compile Include="Helpers\ImageHelpers\ImageConverter.cs" />
-    <Compile Include="Helpers\ImageHelpers\ImageWriterToFile.cs" />
+    <Compile Include="Helpers\ImageHelpers\ImageFileWriter.cs" />
     <Compile Include="Helpers\MiniLogger.cs" />
     <Compile Include="Helpers\Result.cs" />
     <Compile Include="Helpers\TimeHelpers\DateTimeFormatter.cs" />

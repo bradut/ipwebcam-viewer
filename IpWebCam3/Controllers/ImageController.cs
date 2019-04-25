@@ -200,7 +200,7 @@ namespace IpWebCam3.Controllers
                 return;
 
             Image image = ImageHelper.ConvertByteArrayToImage(imageAsBytes);
-            ImageWriterToFile.WriteImageToFile(image, _dateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
+            ImageFileWriter.WriteImageToFile(image, _dateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
         }
 
         private bool IsTimeToWriteAPicture()

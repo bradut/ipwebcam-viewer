@@ -6,7 +6,7 @@ using IpWebCam3.Helpers.TimeHelpers;
 
 namespace IpWebCam3.Helpers.ImageHelpers
 {
-    public class ImageWriterToFile
+    public class ImageFileWriter
     {
 
         public static void WriteImageToFile(Image image, DateTime dateTime, 
