@@ -35,7 +35,7 @@ namespace IpWebCam3.Controllers
         // ToDo: Use DI to inject these values
         public ImageController()
         {
-            string imageErrorLogoPath = _configuration.ImageErrorLogoPath;
+            string imageErrorLogoPath = _configuration.ErrorImageLogPath;
             string snapshotImagePath = _configuration.SnapShotImagePath;
 
             _connectionInfo = _configuration.CameraConnectionInfo;
@@ -135,22 +135,21 @@ namespace IpWebCam3.Controllers
 
         private byte[] GetImageAsByteArrayFromService(string userUtc)
         {
-
             Image image;
+
             try
             {
-                string cgiImagePath = _connectionInfo.Webpage + "?" + userUtc;
-                var newConnInfo = new CameraConnectionInfo(_connectionInfo) { Webpage = cgiImagePath };
-                image = _imageProviderService.GetImage(newConnInfo);
+                image = _imageProviderService.GetImage(_connectionInfo, userUtc);
             }
             catch (Exception ex)
             {
                 image = Image.FromFile(_imageErrorLogoUrl);
 
-                Logger.LogError($"{nameof(GetImageAsByteArrayFromService)}: {ex.Message}"); //throw;
+                Logger.LogError($"{nameof(GetImageAsByteArrayFromService)}: {ex.Message}");
             }
 
             byte[] imageByteArray = ImageHelper.ConvertImageToByteArray(image);
+
             return imageByteArray;
         }
 

@@ -31,5 +31,7 @@ namespace IpWebCam3.Models
             Webpage = otherConnectionInfo.Webpage;
             Port = otherConnectionInfo.Port;
         }
+
+        public bool IsValid => !(string.IsNullOrEmpty(Url));
     }
 }

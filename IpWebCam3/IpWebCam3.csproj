@@ -95,6 +95,7 @@
     <Content Include="images\ptzZoomIn.png" />
     <Content Include="images\ptzZoomOut.png" />
     <Content Include="index.html" />
+    <Content Include="settings.secrets" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -108,6 +109,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Cache\ImageCache.cs" />
+    <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Helpers\HttpContextHelper.cs" />
     <Compile Include="Helpers\ImageHandlerConfiguration.cs" />
     <Compile Include="Helpers\ImageHelper.cs" />
@@ -129,6 +131,9 @@
     <None Include="Properties\PublishProfiles\FTPDeploy to DimaSoft.ca Profile.pubxml" />
     <None Include="Properties\PublishProfiles\WebDeploy to DimaSoft.ca Profile.pubxml" />
     <None Include="Properties\PublishProfiles\WebDeploy to mail2fax_ca Profile.pubxml" />
+    <None Include="settings.secrets.SAMPLE">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -139,7 +144,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="logs\" />
-    <Folder Include="outputimages\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

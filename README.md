@@ -3,17 +3,18 @@ Web Viewer for my IP WebCam: PZT, C#
 
 This project allows viewing real-time images from an IP WebCam.
 
-Features (2019-04-22):
+Features (2019-04-25):
 - Fetches jpeg images from camera (not video streaming yet)
 - Allows users to control the camera: Pan-Tilt-Zoom (PTZ)
 
 Implementation details:
 - Programming: C#/WebAPI/JavaScript
-- WebConfig app settings:
-  - key="MediaServerUrl" value="http://12.34.56.78" -> your external IP
-  - key="MediaServerPort" value="1234" -> your port, forwarded internally to camera's IP and port
-  - key="MediaServerUsername" value="user_name" -> camera's username
-  - key="MediaServerPassword" value="pass_word" -> camera's password
+- WebConfig app settings stores sensitive info in the file **settings.secrets**:
+  You neeed to create settings.secret from file **settings.secret.SAMPLE** and fill it with your values:
+    - key="MediaServerUrl" value="http://12.34.56.78" -> your external IP
+    - key="MediaServerPort" value="1234" -> your external port, which is forwarded in your local network to camera's IP and port
+    - key="MediaServerUsername" value="user_name" -> camera's username
+    - key="MediaServerPassword" value="pass_word" -> camera's password
 - Camera uses Basic Authentication
 - Images are cached in order to improve performance and reduce internet traffic
 

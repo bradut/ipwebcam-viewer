@@ -64,6 +64,9 @@ namespace IpWebCam3.Helpers
 
         private static void WriteToLogFile(string fileName, string text)
         {
+            if (string.IsNullOrEmpty(fileName)) return;
+            if (string.IsNullOrEmpty(text)) return;
+
             string logFileName = GetTodaysLogFileName(fileName);
 
             try

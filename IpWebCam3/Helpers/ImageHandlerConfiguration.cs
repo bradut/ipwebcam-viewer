@@ -1,6 +1,8 @@
-﻿using System;
+﻿using IpWebCam3.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web;
-using IpWebCam3.Models;
 
 namespace IpWebCam3.Helpers
 {
@@ -27,8 +29,8 @@ namespace IpWebCam3.Helpers
                         if (_instance == null)
                         {
                             _instance = new ImageHandlerConfiguration();
-    }
-}
+                        }
+                    }
                 }
 
                 return _instance;
@@ -37,47 +39,52 @@ namespace IpWebCam3.Helpers
 
         public CameraConnectionInfo CameraConnectionInfo { get; private set; }
 
-        public string LogErrorsPath { get; private set; }
+        public string ErrorsLogPath { get; private set; }
 
-        public string LogUserIPsPath { get; private set; }
+        public string UserIPsLogPath { get; private set; }
 
-        public string LogUserPtzCmdPath { get; private set; }
+        public string UserPtzCmdLogPath { get; private set; }
 
-        public string LogCacheStatsPath { get; private set; }
+        public string CacheStatsLogPath { get; private set; }
 
         public string SnapShotImagePath { get; set; }
 
-        public string ImageErrorLogoPath { get; set; }
+        public string ErrorImageLogPath { get; set; }
+
+        public bool IsValid
+        {
+            get
+            {
+                return CameraConnectionInfo != null &&
+                       CameraConnectionInfo.IsValid;
+            }
+        }
 
         private ImageHandlerConfiguration()
         {
             lock (LockMutex)
             {
-                ReadConfiguration();
-                if (!IsValid) throw new ArgumentException("Could not read settings from configuration");
+                try
+                {
+                    ReadConfiguration();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
 
-        private bool IsValid
-        {
-            get
-            {
-                return CameraConnectionInfo != null &&
-                       !string.IsNullOrWhiteSpace(CameraConnectionInfo.Url) &&
-                       !string.IsNullOrWhiteSpace(LogErrorsPath)
-                    ;
-            }
-        }
 
         private void ReadConfiguration()
         {
-            string webCamUrl = System.Configuration.ConfigurationManager.AppSettings["MediaServerUrl"];
-            int.TryParse(System.Configuration.ConfigurationManager.AppSettings["MediaServerPort"], out int webCamPort);
-            string webCamWebPage = System.Configuration.ConfigurationManager.AppSettings["MediaServerImagePath"];
-
             string webCamUserName = System.Configuration.ConfigurationManager.AppSettings["MediaServerUsername"];
             string webCamPassword = System.Configuration.ConfigurationManager.AppSettings["MediaServerPassword"];
-
+            string webCamUrl = System.Configuration.ConfigurationManager.AppSettings["MediaServerUrl"];
+            string webCamWebPage = System.Configuration.ConfigurationManager.AppSettings["MediaServerImagePath"];
+            int.TryParse(System.Configuration.ConfigurationManager.AppSettings["MediaServerPort"], out int webCamPort);
+            
             CameraConnectionInfo = new CameraConnectionInfo
             (
                 username: webCamUserName,
@@ -94,12 +101,34 @@ namespace IpWebCam3.Helpers
             string snapShotImagePath = System.Configuration.ConfigurationManager.AppSettings["SnapShotImagePath"];
             string imageErrorLogoPath = System.Configuration.ConfigurationManager.AppSettings["ImageErrorLogoPath"];
 
-            LogErrorsPath = AppRootDir + logErrorsPath;
-            LogUserIPsPath = AppRootDir + logUserIPsPath;
-            LogUserPtzCmdPath = AppRootDir + logUserPtzCmdPath;
-            LogCacheStatsPath = AppRootDir + logCacheStatsPath;
-            SnapShotImagePath = AppRootDir + snapShotImagePath;
-            ImageErrorLogoPath = AppRootDir + imageErrorLogoPath;
+            ErrorsLogPath = AppRootDir + (logErrorsPath ?? @"\App_Data\logs\errors.txt");
+            UserIPsLogPath = AppRootDir + (logUserIPsPath ?? @"\App_Data\logs\userIps.txt");
+            UserPtzCmdLogPath = AppRootDir + (logUserPtzCmdPath ?? @"\App_Data\logs\userPtz.txt");
+            CacheStatsLogPath = AppRootDir + (logCacheStatsPath ?? @"\App_Data\logs\cacheStats.txt");
+            SnapShotImagePath = AppRootDir + (snapShotImagePath ?? @"\App_Data\outputimages\");
+            ErrorImageLogPath = AppRootDir + (imageErrorLogoPath ?? @"images\earth_hd_1.jpg");
+        }
+
+        public IEnumerable<string> GetNullValueProperties()
+        {
+            List<string> retVal = this.GetNullValuePropertyNames().ToList();
+
+            if (CameraConnectionInfo.IsValid)
+                return retVal;
+
+            IEnumerable<string> cameraConnInfoNullProperties = CameraConnectionInfo.GetNullValuePropertyNames();
+            retVal.AddRange(cameraConnInfoNullProperties);
+
+            return retVal;
+        }
+
+        // allow re-reading values from config files
+        public void Reset()
+        {
+            lock (LockMutex)
+            {
+                _instance = null;
+            }
         }
 
     }

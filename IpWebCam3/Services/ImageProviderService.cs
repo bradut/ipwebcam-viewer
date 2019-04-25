@@ -10,12 +10,12 @@ namespace IpWebCam3.Services
     /// </summary>
     public class ImageProviderService
     {
-        public Image GetImage(CameraConnectionInfo connectionInfo)
+        public Image GetImage(CameraConnectionInfo connectionInfo, string userUtc = null)
         {
             return GetImage(connectionInfo.Username, 
                             connectionInfo.Password, 
                             connectionInfo.Url,
-                            connectionInfo.Webpage, 
+                            connectionInfo.Webpage + "?" + userUtc, 
                             connectionInfo.Port);
         }
 
