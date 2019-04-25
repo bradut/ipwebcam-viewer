@@ -2,37 +2,30 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using IpWebCam3.Helpers.TimeHelpers;
 
-namespace IpWebCam3.Helpers
+namespace IpWebCam3.Helpers.ImageHelpers
 {
-    public class ImageHelper
+    public class ImageWriterToFile
     {
-        private static readonly ImageConverter ImageConverter = new ImageConverter();
 
-        public static byte[] ConvertImageToByteArray(Image image)
+        public static void WriteImageToFile(Image image, DateTime dateTime, 
+                                            string imageDirectory, MiniLogger logger, 
+                                            bool roundSecondsToZero = true)
         {
-            var imageBytes = (byte[])ImageConverter.ConvertTo(image, typeof(byte[]));
+            if (roundSecondsToZero && dateTime.Second != 0)
+            {
+                dateTime =
+                new DateTime(dateTime.Year, dateTime.Month, dateTime.Day,
+                             dateTime.Hour, dateTime.Minute, 00);
+            }
 
-            return imageBytes;
+            string dateTimeCompact = DateTimeFormatter.ConvertTimeToCompactString(dateTime, false);
+
+            WriteImageToFile(image, imageDirectory, dateTimeCompact, logger);
         }
 
-        //https://stackoverflow.com/questions/3801275/how-to-convert-image-to-byte-array/16576471#16576471
-        public static Image ConvertByteArrayToImage(byte[] imageAsByteArray)
-        {
-            var bitmap = (Bitmap)ImageConverter.ConvertFrom(imageAsByteArray);
-
-            return bitmap;
-        }
-
-        public static string ConvertImageToBase64String(Image image)
-        {
-            byte[] imageBytes = ConvertImageToByteArray(image);
-            string base64String = Convert.ToBase64String(imageBytes);
-
-            return base64String;
-        }
-
-        public static void WriteImageToFile(Image image, string snapshotImagePath, string dateTimeCompact, MiniLogger logger)
+        private static void WriteImageToFile(Image image, string snapshotImagePath, string dateTimeCompact, MiniLogger logger)
         {
             TryCreateDir(snapshotImagePath, logger);
 
@@ -95,6 +88,5 @@ namespace IpWebCam3.Helpers
                 }
             }
         }
-
     }
 }

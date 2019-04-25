@@ -2,7 +2,7 @@
 
 namespace IpWebCam3.Helpers.TimeHelpers
 {
-    public interface IDateTimeHelper
+    public interface IDateTimeProvider
     {
         DateTime DateTimeNow { get; }
 
@@ -11,7 +11,7 @@ namespace IpWebCam3.Helpers.TimeHelpers
         string GetCurrentTimeAsCompactString(bool includeMilliseconds = false);
     }
 
-    public class DateTimeHelper: IDateTimeHelper
+    public class DateTimeProvider: IDateTimeProvider
     {
         public DateTime DateTimeNow
         {

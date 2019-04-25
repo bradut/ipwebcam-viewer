@@ -12,7 +12,7 @@ namespace IpWebCam3.Controllers
     {
         // shared, static vars
         protected readonly ImageHandlerConfiguration _configuration;
-        private static readonly IDateTimeHelper _dateTimeHelper = new DateTimeHelper();
+        private static readonly IDateTimeProvider DateTimeProvider = new DateTimeProvider();
 
         protected string UserIp { get; set; }
         protected int UserId { get; set; }
@@ -25,7 +25,7 @@ namespace IpWebCam3.Controllers
             {
                 ImageHandlerConfiguration cfg = ImageHandlerConfiguration.Instance;
                 return _logger ??
-                       (_logger = new MiniLogger(_dateTimeHelper,
+                       (_logger = new MiniLogger(DateTimeProvider,
                            cfg.UserIPsLogPath, cfg.UserPtzCmdLogPath,
                            cfg.ErrorsLogPath, cfg.CacheStatsLogPath));
             }

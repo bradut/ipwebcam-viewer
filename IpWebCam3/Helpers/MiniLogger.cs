@@ -11,7 +11,7 @@ namespace IpWebCam3.Helpers
     {
         private static readonly object LockFileWrite = new object();
 
-        private static IDateTimeHelper _dateTimeHelper;
+        private static IDateTimeProvider _dateTimeProvider;
         private static string _logUserIPsPath;
         private static string _logUserPtzCmdPath;
         private static string _logErrorsPath;
@@ -21,11 +21,11 @@ namespace IpWebCam3.Helpers
         private int _currentUserId;
 
 
-        public MiniLogger(IDateTimeHelper dateTimeHelper,
+        public MiniLogger(IDateTimeProvider dateTimeProvider,
                           string logUserIPsPath, string logUserPtzCmdPath,
                           string logErrorsPath, string logCacheStatsPath)
         {
-            _dateTimeHelper = dateTimeHelper;
+            _dateTimeProvider = dateTimeProvider;
             _logUserIPsPath = logUserIPsPath;
             _logUserPtzCmdPath = logUserPtzCmdPath;
             _logErrorsPath = logErrorsPath;
@@ -73,7 +73,7 @@ namespace IpWebCam3.Helpers
             {
                 lock (LockFileWrite)
                 {
-                    string dateTime = _dateTimeHelper.GetCurrentTimeAsString(includeMilliseconds: true);
+                    string dateTime = _dateTimeProvider.GetCurrentTimeAsString(includeMilliseconds: true);
                     text = dateTime + "," + text;
                     File.AppendAllText(logFileName, text + Environment.NewLine);
                 }
@@ -101,7 +101,7 @@ namespace IpWebCam3.Helpers
             lock (LockFileWrite)
             {
                 return fileName.Replace(".txt",
-                    _dateTimeHelper.DateTimeNow.ToString("_yyyy-MM-dd") + ".txt");
+                    _dateTimeProvider.DateTimeNow.ToString("_yyyy-MM-dd") + ".txt");
             }
         }
     }

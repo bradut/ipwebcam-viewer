@@ -112,11 +112,12 @@
     <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Helpers\HttpContextHelper.cs" />
     <Compile Include="Helpers\ImageHandlerConfiguration.cs" />
-    <Compile Include="Helpers\ImageHelper.cs" />
+    <Compile Include="Helpers\ImageHelpers\ImageConverter.cs" />
+    <Compile Include="Helpers\ImageHelpers\ImageWriterToFile.cs" />
     <Compile Include="Helpers\MiniLogger.cs" />
     <Compile Include="Helpers\Result.cs" />
     <Compile Include="Helpers\TimeHelpers\DateTimeFormatter.cs" />
-    <Compile Include="Helpers\TimeHelpers\DateTimeHelper.cs" />
+    <Compile Include="Helpers\TimeHelpers\DateTimeProvider.cs" />
     <Compile Include="Models\CameraConnectionInfo.cs" />
     <Compile Include="Models\ImageInfo.cs" />
     <Compile Include="Models\CacheUpdaterInfo.cs" />

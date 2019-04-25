@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
+using IpWebCam3.Helpers.ImageHelpers;
 
 namespace IpWebCam3.Controllers
 {
@@ -26,7 +27,7 @@ namespace IpWebCam3.Controllers
         private readonly IImageCachingService _imageCacheService;
         private readonly ImageProviderService _imageProviderService;
         private readonly CacheUpdaterInfo _cacheUpdater = new CacheUpdaterInfo();
-        private readonly IDateTimeHelper _dateTimeHelper = new DateTimeHelper();
+        private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
 
         private DateTime _lastImageAccess;
 
@@ -53,7 +54,7 @@ namespace IpWebCam3.Controllers
 
             _imageCacheService = imageCacheService;
             _imageProviderService = imageProviderService;
-            _lastImageAccess = _dateTimeHelper.DateTimeNow;
+            _lastImageAccess = _dateTimeProvider.DateTimeNow;
 
             AddConnectedUser();
         }
@@ -99,12 +100,12 @@ namespace IpWebCam3.Controllers
         {
             _imageCacheService.WaitBeforeGettingNextImage(userId: UserId, timeRequested: _lastImageAccess);
 
-            DateTime requestTime = _dateTimeHelper.DateTimeNow;
+            DateTime requestTime = _dateTimeProvider.DateTimeNow;
             byte[] imageByteArray = _imageCacheService.GetImageAsByteArray(userId: UserId, timeRequested: requestTime);
 
             if (imageByteArray != null)
             {
-                _lastImageAccess = _dateTimeHelper.DateTimeNow;
+                _lastImageAccess = _dateTimeProvider.DateTimeNow;
 
                 return imageByteArray;
             }
@@ -114,7 +115,7 @@ namespace IpWebCam3.Controllers
                 LogBeforeReadingFromService(requestTime);
 
                 imageByteArray = GetImageAsByteArrayFromService(userUtc);
-                _lastImageAccess = _dateTimeHelper.DateTimeNow;
+                _lastImageAccess = _dateTimeProvider.DateTimeNow;
 
                 LogAfterReadingFromService();
 
@@ -156,8 +157,8 @@ namespace IpWebCam3.Controllers
 
         private static readonly object LockCanReadImageFromService = new object();
 
-        // Ensure that only one client is the *cache updater* which connects to the webCam.
-        // The others read images only from cache (Better performance, less traffic)
+        // Ensure that only one client is the role *cache updater*, so it has the right to connect to the webCam.
+        // The others can only read images from cache (Better performance, less traffic)
         public bool CanReadImageFromService(int userId, DateTime requestTime)
         {
             var canReadFromService = false;
@@ -199,36 +200,22 @@ namespace IpWebCam3.Controllers
                 return;
 
             Image image = ImageHelper.ConvertByteArrayToImage(imageAsBytes);
-            WriteImageToFile(image, _dateTimeHelper.DateTimeNow);
+            ImageWriterToFile.WriteImageToFile(image, _dateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
         }
 
         private bool IsTimeToWriteAPicture()
         {
             return
-                _dateTimeHelper.DateTimeNow.Second >= 00 && // provide an interval to avoid
-                _dateTimeHelper.DateTimeNow.Second <= 03 // missing time ending in '00' seconds
+                _dateTimeProvider.DateTimeNow.Second >= 00 && // provide an interval to avoid
+                _dateTimeProvider.DateTimeNow.Second <= 03 // missing time ending in '00' seconds
             &&
             (
-                _dateTimeHelper.DateTimeNow.Minute == 00 ||
-                _dateTimeHelper.DateTimeNow.Minute == 15 ||
-                _dateTimeHelper.DateTimeNow.Minute == 30 ||
-                _dateTimeHelper.DateTimeNow.Minute == 45);
+                _dateTimeProvider.DateTimeNow.Minute == 00 ||
+                _dateTimeProvider.DateTimeNow.Minute == 15 ||
+                _dateTimeProvider.DateTimeNow.Minute == 30 ||
+                _dateTimeProvider.DateTimeNow.Minute == 45);
         }
-
-        private void WriteImageToFile(Image image, DateTime dateTime, bool roundSecondsToZero = true)
-        {
-            if (roundSecondsToZero && dateTime.Second != 0)
-            {
-                dateTime =
-                new DateTime(dateTime.Year, dateTime.Month, dateTime.Day,
-                             dateTime.Hour, dateTime.Minute, 00);
-            }
-
-            string dateTimeCompact = DateTimeFormatter.ConvertTimeToCompactString(dateTime, false);
-
-            ImageHelper.WriteImageToFile(image, _snapshotImagePath, dateTimeCompact, Logger);
-        }
-
+        
 
 
         private void LogNewUserHasConnected()
