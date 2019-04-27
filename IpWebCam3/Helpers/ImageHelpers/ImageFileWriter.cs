@@ -13,6 +13,9 @@ namespace IpWebCam3.Helpers.ImageHelpers
                                             string imageDirectory, MiniLogger logger, 
                                             bool roundSecondsToZero = true)
         {
+            if (image == null) return;
+            if (string.IsNullOrWhiteSpace(imageDirectory)) return;
+
             if (roundSecondsToZero && dateTime.Second != 0)
             {
                 dateTime =
