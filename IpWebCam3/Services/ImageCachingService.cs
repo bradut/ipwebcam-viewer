@@ -80,32 +80,7 @@ namespace IpWebCam3.Services
 
             return canReturnImage;
         }
-
-  
-
-        private string CreateMessageWhenCanNotReturnImage(int userId, DateTime timeRequested)
-        {
-            string reason = string.Empty;
-            if (_imageCache == null) reason += " cache is null ";
-            else
-            {
-                if (!_imageCache.HasData) reason += "cache has no valid data. ";
-                if (_imageCache.UserId == userId) reason += " same user. ";
-                if (!IsCachedImageFresh(timeRequested)) reason += "image too old. ";
-            }
-
-            string statusMessage = "From SOURCE.   Reason = " + reason.Trim();
-            return statusMessage;
-        }
-
-        private string CreateMessageWhenCanReturnImage()
-        {
-            return "From cache  . " +
-                          " Current = userId: " + _imageCache.UserId
-                          + ", LastUpdate: " +
-                          DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true);
-        }
-
+ 
         private bool IsCachedImageFresh(DateTime requestMoment)
         {
             return requestMoment.Subtract(_imageCache.LastUpdate).TotalMilliseconds
@@ -199,6 +174,29 @@ namespace IpWebCam3.Services
             statusMessage += ". Requested by userId " + userId + ", at " +
                              DateTimeFormatter.ConvertTimeToCompactString(timeRequested, true);
             _logger?.LogCacheStat(statusMessage);
+        }
+
+        private string CreateMessageWhenCanNotReturnImage(int userId, DateTime timeRequested)
+        {
+            string reason = string.Empty;
+            if (_imageCache == null) reason += " cache is null ";
+            else
+            {
+                if (!_imageCache.HasData) reason += "cache has no valid data. ";
+                if (_imageCache.UserId == userId) reason += " same user. ";
+                if (!IsCachedImageFresh(timeRequested)) reason += "image too old. ";
+            }
+
+            string statusMessage = "From SOURCE.   Reason = " + reason.Trim();
+            return statusMessage;
+        }
+
+        private string CreateMessageWhenCanReturnImage()
+        {
+            return "From cache  . " +
+                   " Current = userId: " + _imageCache.UserId
+                   + ", LastUpdate: " +
+                   DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true);
         }
     }
 }
