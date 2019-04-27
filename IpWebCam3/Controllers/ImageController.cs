@@ -112,17 +112,17 @@ namespace IpWebCam3.Controllers
 
             if (CanReadImageFromService(UserId, requestTime))
             {
-                LogBeforeReadingFromService(requestTime);
+                LogBeforeReadingFromProvider(requestTime);
 
-                imageByteArray = GetImageAsByteArrayFromService(userUtc);
+                imageByteArray = GetImageAsByteArrayFromProvider(userUtc);
                 _lastImageAccess = _dateTimeProvider.DateTimeNow;
 
-                LogAfterReadingFromService();
+                LogAfterReadingFromProvider();
 
                 _imageCacheService.UpdateCachedImage(imageByteArray: imageByteArray,
                                                      userId: UserId,
                                                      timeUpdated: _lastImageAccess);
-                LogDurationReadingFromService(requestTime);
+                LogDurationReadingFromProvider(requestTime);
             }
             else
             {
@@ -134,7 +134,7 @@ namespace IpWebCam3.Controllers
             return imageByteArray;
         }
 
-        private byte[] GetImageAsByteArrayFromService(string userUtc)
+        private byte[] GetImageAsByteArrayFromProvider(string userUtc)
         {
             Image image;
 
@@ -146,7 +146,7 @@ namespace IpWebCam3.Controllers
             {
                 image = Image.FromFile(_imageErrorLogoUrl);
 
-                Logger.LogError($"{nameof(GetImageAsByteArrayFromService)}: {ex.Message}");
+                Logger.LogError($"{nameof(GetImageAsByteArrayFromProvider)}: {ex.Message}");
             }
 
             byte[] imageByteArray = ImageHelper.ConvertImageToByteArray(image);
@@ -155,7 +155,7 @@ namespace IpWebCam3.Controllers
         }
 
 
-        private static readonly object LockCanReadImageFromService = new object();
+        private static readonly object LockCanReadImageFromProvider = new object();
 
         // Ensure that only one client is the role *cache updater*, so it has the right to connect to the webCam.
         // The others can only read images from cache (Better performance, less traffic)
@@ -163,7 +163,7 @@ namespace IpWebCam3.Controllers
         {
             var canReadFromService = false;
 
-            lock (LockCanReadImageFromService)
+            lock (LockCanReadImageFromProvider)
             {
                 if (_cacheUpdater.UserId == userId)
                 {
@@ -261,21 +261,21 @@ namespace IpWebCam3.Controllers
             Logger?.LogCacheStat(statusMessage);
         }
 
-        private void LogBeforeReadingFromService(DateTime requestTime)
+        private void LogBeforeReadingFromProvider(DateTime requestTime)
         {
             Logger?.LogCacheStat(
                 "[1]--Start  reading image from source. UserId: " + UserId + ", time: " +
                 DateTimeFormatter.ConvertTimeToCompactString(requestTime, true));
         }
 
-        private void LogAfterReadingFromService()
+        private void LogAfterReadingFromProvider()
         {
             Logger?.LogCacheStat(
                 "[2]--Finish reading image from source. UserId: " + UserId + ", time: " +
                 DateTimeFormatter.ConvertTimeToCompactString(_lastImageAccess, true));
         }
 
-        private void LogDurationReadingFromService(DateTime requestTime)
+        private void LogDurationReadingFromProvider(DateTime requestTime)
         {
             Logger?.LogCacheStat("[3]--Duration for userId " + UserId +
                                     " to retrieve image from source and update cache [milliseconds] = "

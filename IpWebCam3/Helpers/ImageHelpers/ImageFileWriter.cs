@@ -1,21 +1,31 @@
-﻿using System;
+﻿using IpWebCam3.Helpers.TimeHelpers;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using IpWebCam3.Helpers.TimeHelpers;
 
 namespace IpWebCam3.Helpers.ImageHelpers
 {
     public class ImageFileWriter
     {
+        private static readonly object LockImageFileWriter = new object();
 
-        public static void WriteImageToFile(Image image, DateTime dateTime, 
-                                            string imageDirectory, MiniLogger logger, 
+        public static void WriteImageToFile(Image image, DateTime dateTime,
+                                            string imageDirectory, MiniLogger logger,
                                             bool roundSecondsToZero = true)
         {
             if (image == null) return;
             if (string.IsNullOrWhiteSpace(imageDirectory)) return;
 
+            dateTime = RoundSecondsToZero(dateTime, roundSecondsToZero);
+
+            string dateTimeCompact = DateTimeFormatter.ConvertTimeToCompactString(dateTime: dateTime, withMilliSeconds:false);
+
+            WriteImageToFile(image, imageDirectory, dateTimeCompact, logger);
+        }
+
+        private static DateTime RoundSecondsToZero(DateTime dateTime, bool roundSecondsToZero)
+        {
             if (roundSecondsToZero && dateTime.Second != 0)
             {
                 dateTime =
@@ -23,9 +33,7 @@ namespace IpWebCam3.Helpers.ImageHelpers
                              dateTime.Hour, dateTime.Minute, 00);
             }
 
-            string dateTimeCompact = DateTimeFormatter.ConvertTimeToCompactString(dateTime, false);
-
-            WriteImageToFile(image, imageDirectory, dateTimeCompact, logger);
+            return dateTime;
         }
 
         private static void WriteImageToFile(Image image, string snapshotImagePath, string dateTimeCompact, MiniLogger logger)
@@ -37,28 +45,40 @@ namespace IpWebCam3.Helpers.ImageHelpers
             if (File.Exists(imagePath))
                 return;
 
-            try
+            lock (LockImageFileWriter)
             {
-                image.Save(imagePath, ImageFormat.Jpeg);
-            }
-            catch (System.Runtime.InteropServices.ExternalException sriException)
-            {
-                logger?.LogError($"{nameof(WriteImageToFile)}(): {sriException.Message} filepath: {imagePath}");
-
+                if (File.Exists(imagePath))
+                    return;
+                
                 try
                 {
-                    if (File.Exists(imagePath)) File.Delete(imagePath);
-                    System.Threading.Thread.Sleep(1000);
-                    SaveImage(image, imagePath);
+                    image.Save(imagePath, ImageFormat.Jpeg);
+                }
+                catch (System.Runtime.InteropServices.ExternalException sriException)
+                {
+                    logger?.LogError($"{nameof(WriteImageToFile)}(): {sriException.Message} filepath: {imagePath}");
+
+                    TrySaveImageAgain(image, logger, imagePath);
                 }
                 catch (Exception e)
                 {
-                     logger?.LogError($"{nameof(WriteImageToFile)}(): {e.Message} filepath: {imagePath}");
+                    logger?.LogError($"{nameof(WriteImageToFile)}(): {e.Message} filepath: {imagePath}");
                 }
+            }
+        }
+
+        private static void TrySaveImageAgain(Image image, MiniLogger logger, string imagePath)
+        {
+            try
+            {
+                if (File.Exists(imagePath)) File.Delete(imagePath);
+                System.Threading.Thread.Sleep(1000);
+                SaveImage(image, imagePath);
             }
             catch (Exception e)
             {
-                logger?.LogError($"{nameof(WriteImageToFile)}(): {e.Message} filepath: {imagePath}");
+                logger?.LogError($"{nameof(WriteImageToFile)}->{nameof(TrySaveImageAgain)}(): " +
+                                 $"{e.Message} filepath: {imagePath}");
             }
         }
 
@@ -78,6 +98,7 @@ namespace IpWebCam3.Helpers.ImageHelpers
             }
         }
 
+        // A safer way to save image to a file
         // https://stackoverflow.com/questions/15862810/a-generic-error-occurred-in-gdi-in-bitmap-save-method
         public static void SaveImage(Image image, string imagePath)
         {

@@ -9,9 +9,9 @@ namespace IpWebCam3.Helpers.TimeHelpers
             return dateTime.ToString("yyyy-MM-dd HH:mm:ss" + millisecondsFormat);
         }
 
-        public static string ConvertTimeToCompactString(DateTime dateTime, bool includeMilliseconds)
+        public static string ConvertTimeToCompactString(DateTime dateTime, bool withMilliSeconds)
         {
-            return ConvertTimeToString(dateTime, includeMilliseconds)
+            return ConvertTimeToString(dateTime, withMilliSeconds)
                 .Replace("-", "").Replace(" ", "_").Replace(":", "");//.Replace(".", "_");
         }
     }

@@ -28,6 +28,9 @@ namespace IpWebCam3.Services
 
         private readonly MiniLogger _logger;
 
+        private const int MinValueCacheLifeTimeMilliSec = 1;
+        private const int MinValueFramesPerSecond = 1;
+
         public ImageCachingService(ImageCache imageCache,
                                    MiniLogger logger = null,
                                    int cacheLifeTimeMilliSec = 2000,
@@ -36,9 +39,12 @@ namespace IpWebCam3.Services
             )
         {
             _imageCache = imageCache ?? throw new ArgumentNullException(nameof(imageCache));
-            if (cacheLifeTimeMilliSec <= 1) throw new ArgumentException(
-                        $"{nameof(cacheLifeTimeMilliSec)} too small: {cacheLifeTimeMilliSec}");
-            if (framesPerSecond <= 1) throw new ArgumentException($"{nameof(framesPerSecond)} too small: {framesPerSecond}");
+            if (cacheLifeTimeMilliSec <= MinValueCacheLifeTimeMilliSec) throw new ArgumentException(
+                        $"{nameof(cacheLifeTimeMilliSec)} too small: " +
+                        $"{cacheLifeTimeMilliSec} < {MinValueCacheLifeTimeMilliSec}");
+            if (framesPerSecond <= MinValueFramesPerSecond) throw new ArgumentException(
+                        $"{nameof(framesPerSecond)} too small: " +
+                        $"{framesPerSecond} < {MinValueFramesPerSecond}");
 
             _cacheLifeTimeMilliSec = cacheLifeTimeMilliSec;
             _framesPerSecond = framesPerSecond;
@@ -67,34 +73,37 @@ namespace IpWebCam3.Services
         {
             bool canReturnImage = _imageCache != null &&
                                  _imageCache.HasData &&
-                                 _imageCache.UserId != userId && // The *cache updater* user never reads from cache
+                                 _imageCache.UserId != userId && // *cache updater* user never reads from cache
                                  IsCachedImageFresh(timeRequested);
 
-            string statusMessage;
-
-            if (canReturnImage)
-            {
-                statusMessage = "From cache  . " +
-                              " Current = userId: " + _imageCache.UserId
-                              + ", LastUpdate: " + DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true);
-            }
-            else
-            {
-                string reason = string.Empty;
-                if (_imageCache == null) reason += " cache is null ";
-                else
-                {
-                    if (!_imageCache.HasData) reason += "cache has no valid data ";
-                    if (_imageCache.UserId == userId) reason += " same user ";
-                    if (!IsCachedImageFresh(timeRequested)) reason += "image too old ";
-                }
-
-                statusMessage = "From SOURCE.   Reason = " + reason.Trim();
-            }
-            statusMessage += ". Requested by userId " + userId + ", at " + DateTimeFormatter.ConvertTimeToCompactString(timeRequested, true);
-            _logger?.LogCacheStat(statusMessage);
+            LogCanReturnCachedImage(userId, timeRequested, canReturnImage);
 
             return canReturnImage;
+        }
+
+  
+
+        private string CreateMessageWhenCanNotReturnImage(int userId, DateTime timeRequested)
+        {
+            string reason = string.Empty;
+            if (_imageCache == null) reason += " cache is null ";
+            else
+            {
+                if (!_imageCache.HasData) reason += "cache has no valid data. ";
+                if (_imageCache.UserId == userId) reason += " same user. ";
+                if (!IsCachedImageFresh(timeRequested)) reason += "image too old. ";
+            }
+
+            string statusMessage = "From SOURCE.   Reason = " + reason.Trim();
+            return statusMessage;
+        }
+
+        private string CreateMessageWhenCanReturnImage()
+        {
+            return "From cache  . " +
+                          " Current = userId: " + _imageCache.UserId
+                          + ", LastUpdate: " +
+                          DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true);
         }
 
         private bool IsCachedImageFresh(DateTime requestMoment)
@@ -179,6 +188,17 @@ namespace IpWebCam3.Services
             statMessage += " With = userId: " + _imageCache.UserId + ", LastUpdate: "
                            + DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true) + " ";
             _logger?.LogCacheStat(statMessage);
+        }
+
+        private void LogCanReturnCachedImage(int userId, DateTime timeRequested, bool canReturnImage)
+        {
+            string statusMessage = canReturnImage
+                ? CreateMessageWhenCanReturnImage()
+                : CreateMessageWhenCanNotReturnImage(userId, timeRequested);
+
+            statusMessage += ". Requested by userId " + userId + ", at " +
+                             DateTimeFormatter.ConvertTimeToCompactString(timeRequested, true);
+            _logger?.LogCacheStat(statusMessage);
         }
     }
 }
