@@ -108,7 +108,7 @@ namespace IpWebCam3.Services
 
             var timeToWait = 0;
 
-            // grant immediate access to the first request 
+            // grant immediate access to requests occuring whiles reading the first frame
             if (FpsTimeBetweenTwoImagesMilliSec >= requestDelay)
             {
                 return timeToWait;
