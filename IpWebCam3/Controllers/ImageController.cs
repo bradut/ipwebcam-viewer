@@ -1,7 +1,6 @@
 ﻿using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.Cache;
 using IpWebCam3.Helpers.ImageHelpers;
-using IpWebCam3.Helpers.TimeHelpers;
 using IpWebCam3.Services.ImageServices;
 using System;
 using System.Collections.Concurrent;
@@ -20,8 +19,7 @@ namespace IpWebCam3.Controllers
 
         private readonly string _snapshotImagePath;
         private readonly ImageProviderService _imageProviderService;
-        private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
-
+        
         // ToDo: Use DI to inject these values
         public ImageController()
         {
@@ -35,10 +33,10 @@ namespace IpWebCam3.Controllers
             var imageFromWebCamService = new ImageFromWebCamService(_configuration.CameraConnectionInfo);
 
             var cacheUpdaterExpirationMilliSec = 600;
-            DateTime lastImageAccess = _dateTimeProvider.DateTimeNow;
+            DateTime lastImageAccess = DateTimeProvider.DateTimeNow;
             _imageProviderService = new ImageProviderService(imageFromCacheService,
                                                              imageFromWebCamService,
-                                                             _dateTimeProvider,
+                                                             DateTimeProvider,
                                                              Logger,
                                                              cacheUpdaterExpirationMilliSec,
                                                              _configuration.ErrorImageLogPath,
@@ -88,20 +86,20 @@ namespace IpWebCam3.Controllers
                 return;
 
             Image image = ImageHelper.ConvertByteArrayToImage(imageAsBytes);
-            ImageFileWriter.WriteImageToFile(image, _dateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
+            ImageFileWriter.WriteImageToFile(image, DateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
         }
 
         private bool IsTimeToWriteAPicture()
         {
             return
-                _dateTimeProvider.DateTimeNow.Second >= 00 && // provide an interval to avoid
-                _dateTimeProvider.DateTimeNow.Second <= 03 // missing time ending in '00' seconds
+                DateTimeProvider.DateTimeNow.Second >= 00 && // provide an interval to avoid
+                DateTimeProvider.DateTimeNow.Second <= 03 // missing time ending in '00' seconds
             &&
             (
-                _dateTimeProvider.DateTimeNow.Minute == 00 ||
-                _dateTimeProvider.DateTimeNow.Minute == 15 ||
-                _dateTimeProvider.DateTimeNow.Minute == 30 ||
-                _dateTimeProvider.DateTimeNow.Minute == 45);
+                DateTimeProvider.DateTimeNow.Minute == 00 ||
+                DateTimeProvider.DateTimeNow.Minute == 15 ||
+                DateTimeProvider.DateTimeNow.Minute == 30 ||
+                DateTimeProvider.DateTimeNow.Minute == 45);
         }
 
 

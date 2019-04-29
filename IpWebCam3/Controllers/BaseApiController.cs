@@ -12,7 +12,7 @@ namespace IpWebCam3.Controllers
     {
         // shared, static vars
         protected readonly ImageHandlerConfiguration _configuration;
-        private static readonly IDateTimeProvider DateTimeProvider = new DateTimeProvider();
+        protected static readonly IDateTimeProvider DateTimeProvider = new DateTimeProvider();
 
         protected string UserIp { get; set; }
         protected int UserId { get; set; }
