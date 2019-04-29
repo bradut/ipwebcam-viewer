@@ -144,6 +144,8 @@ namespace IpWebCam3.Services.ImageServices
 
         public DateTime CacheLastUpdate => _imageCache.LastUpdate;
 
+
+
         private string PrepareUpdateCacheLogMessage(int newUserId)
         {
             var statMessage = "UPDATE cache . ";
