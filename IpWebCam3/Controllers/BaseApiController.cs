@@ -43,17 +43,17 @@ namespace IpWebCam3.Controllers
                 Console.WriteLine(e);
                 throw;
             }
+            
+            UserIp = HttpContextHelper.GetIpFromHttpContext(HttpContext.Current);
+            UserId = HttpContextHelper.GetUniqueUserIdFromBrowser(HttpContext.Current, UserIp);
+
+            Logger?.SetUserInfo(currentUserId: UserId, currentUserIp: UserIp);
 
             if (!_configuration.IsValid)
             {
                 LogInvalidConfiguration();
                 _configuration.Reset();
             }
-            
-            UserIp = HttpContextHelper.GetIpFromHttpContext(HttpContext.Current);
-            UserId = HttpContextHelper.GetUniqueUserIdFromBrowser(HttpContext.Current, UserIp);
-
-            Logger?.SetUserInfo(currentUserId: UserId, currentUserIp: UserIp);
         }
 
         private void LogInvalidConfiguration()
