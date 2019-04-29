@@ -20,7 +20,8 @@ namespace IpWebCam3.Services.ImageServices
         private readonly CacheUpdaterInfo _cacheUpdater = new CacheUpdaterInfo();
 
 
-        public ImageProviderService(IImageCachingService imageFromCacheService,
+        public ImageProviderService(
+            IImageCachingService imageFromCacheService,
             ImageFromWebCamService imageFromWebCamService,
             IDateTimeProvider dateTimeProvider,
             MiniLogger logger,

@@ -31,7 +31,8 @@ namespace IpWebCam3.Controllers
             CameraConnectionInfo _connectionInfo = _configuration.CameraConnectionInfo;
 
             _snapshotImagePath = snapshotImagePath;
-            
+
+            var cacheUpdaterExpirationMilliSec = 600;
             var cacheLifeTimeMilliSec = 2000;
             var cameraFps = 5;
 
@@ -39,9 +40,14 @@ namespace IpWebCam3.Controllers
             var imageCache = new ImageCache();
             var imageFromCacheService = new ImageFromCacheService(imageCache, Logger, cacheLifeTimeMilliSec, cameraFps);
             var imageFromWebCamService = new ImageFromWebCamService(_connectionInfo);
-            _imageProviderService = new ImageProviderService(imageFromCacheService, imageFromWebCamService, 
-                                                            _dateTimeProvider, Logger, cacheLifeTimeMilliSec,
-                                                            imageErrorLogoPath, _lastImageAccess);
+
+            _imageProviderService = new ImageProviderService(imageFromCacheService, 
+                                                             imageFromWebCamService, 
+                                                             _dateTimeProvider, 
+                                                             Logger,
+                                                             cacheUpdaterExpirationMilliSec,
+                                                             imageErrorLogoPath, 
+                                                             _lastImageAccess);
 
             AddConnectedUser();
         }
