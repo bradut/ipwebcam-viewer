@@ -1,4 +1,5 @@
-﻿using IpWebCam3.Helpers;
+﻿using System;
+using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.Cache;
 using IpWebCam3.Helpers.TimeHelpers;
 using System.Collections.Concurrent;
@@ -9,7 +10,6 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using IpWebCam3.Helpers.ImageHelpers;
-using IpWebCam3.Models;
 using IpWebCam3.Services.ImageServices;
 
 namespace IpWebCam3.Controllers
@@ -25,28 +25,25 @@ namespace IpWebCam3.Controllers
         // ToDo: Use DI to inject these values
         public ImageController()
         {
-            string imageErrorLogoPath = _configuration.ErrorImageLogPath;
             string snapshotImagePath = _configuration.SnapShotImagePath;
-
-            CameraConnectionInfo _connectionInfo = _configuration.CameraConnectionInfo;
-
+            
             _snapshotImagePath = snapshotImagePath;
 
             var cacheUpdaterExpirationMilliSec = 600;
             var cacheLifeTimeMilliSec = 2000;
             var cameraFps = 5;
 
-            var _lastImageAccess = _dateTimeProvider.DateTimeNow;
+            DateTime _lastImageAccess = _dateTimeProvider.DateTimeNow;
             var imageCache = new ImageCache();
             var imageFromCacheService = new ImageFromCacheService(imageCache, Logger, cacheLifeTimeMilliSec, cameraFps);
-            var imageFromWebCamService = new ImageFromWebCamService(_connectionInfo);
+            var imageFromWebCamService = new ImageFromWebCamService(_configuration.CameraConnectionInfo);
 
             _imageProviderService = new ImageProviderService(imageFromCacheService, 
                                                              imageFromWebCamService, 
                                                              _dateTimeProvider, 
                                                              Logger,
                                                              cacheUpdaterExpirationMilliSec,
-                                                             imageErrorLogoPath, 
+                                                             _configuration.ErrorImageLogPath, 
                                                              _lastImageAccess);
 
             AddConnectedUser();
