@@ -1,7 +1,9 @@
-﻿using System;
-using IpWebCam3.Helpers;
+﻿using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.Cache;
+using IpWebCam3.Helpers.ImageHelpers;
 using IpWebCam3.Helpers.TimeHelpers;
+using IpWebCam3.Services.ImageServices;
+using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.IO;
@@ -9,8 +11,6 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-using IpWebCam3.Helpers.ImageHelpers;
-using IpWebCam3.Services.ImageServices;
 
 namespace IpWebCam3.Controllers
 {
@@ -25,26 +25,24 @@ namespace IpWebCam3.Controllers
         // ToDo: Use DI to inject these values
         public ImageController()
         {
-            string snapshotImagePath = _configuration.SnapShotImagePath;
+            _snapshotImagePath = _configuration.SnapShotImagePath;
             
-            _snapshotImagePath = snapshotImagePath;
-
-            var cacheUpdaterExpirationMilliSec = 600;
+            var imageCache = new ImageCache();
             var cacheLifeTimeMilliSec = 2000;
             var cameraFps = 5;
-
-            DateTime _lastImageAccess = _dateTimeProvider.DateTimeNow;
-            var imageCache = new ImageCache();
             var imageFromCacheService = new ImageFromCacheService(imageCache, Logger, cacheLifeTimeMilliSec, cameraFps);
+
             var imageFromWebCamService = new ImageFromWebCamService(_configuration.CameraConnectionInfo);
 
-            _imageProviderService = new ImageProviderService(imageFromCacheService, 
-                                                             imageFromWebCamService, 
-                                                             _dateTimeProvider, 
+            var cacheUpdaterExpirationMilliSec = 600;
+            DateTime lastImageAccess = _dateTimeProvider.DateTimeNow;
+            _imageProviderService = new ImageProviderService(imageFromCacheService,
+                                                             imageFromWebCamService,
+                                                             _dateTimeProvider,
                                                              Logger,
                                                              cacheUpdaterExpirationMilliSec,
-                                                             _configuration.ErrorImageLogPath, 
-                                                             _lastImageAccess);
+                                                             _configuration.ErrorImageLogPath,
+                                                             lastImageAccess);
 
             AddConnectedUser();
         }
@@ -57,7 +55,7 @@ namespace IpWebCam3.Controllers
 
             LogNewUserHasConnected();
         }
-        
+
 
         [HttpGet]
         public HttpResponseMessage Get(string id)
@@ -83,7 +81,7 @@ namespace IpWebCam3.Controllers
 
             return response;
         }
-        
+
         private void SaveImageSnapshot(byte[] imageAsBytes)
         {
             if (!IsTimeToWriteAPicture())
@@ -105,8 +103,8 @@ namespace IpWebCam3.Controllers
                 _dateTimeProvider.DateTimeNow.Minute == 30 ||
                 _dateTimeProvider.DateTimeNow.Minute == 45);
         }
-        
-        
+
+
         private void LogNewUserHasConnected()
         {
             string currentBrowserInfo = HttpContextHelper.GetBrowserInfo(HttpContext.Current);
