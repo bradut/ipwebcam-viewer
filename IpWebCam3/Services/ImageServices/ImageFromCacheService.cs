@@ -7,8 +7,8 @@ namespace IpWebCam3.Services.ImageServices
 {
     public interface IImageCachingService
     {
-        byte[] GetImageAsByteArray();
-        byte[] GetImageAsByteArray(int userId, DateTime timeRequested);
+        byte[] GetCurrentImageAsByteArray();
+        byte[] GetNewImageAsByteArray(int userId, DateTime timeRequested);
         int WaitBeforeGettingNextImage(int userId, DateTime timeRequested);
         void UpdateCachedImage(byte[] imageByteArray, int userId, DateTime timeUpdated);
         DateTime CacheLastUpdate { get; }
@@ -53,7 +53,7 @@ namespace IpWebCam3.Services.ImageServices
         }
 
         // Read the image from cache regardless of age, etc 
-        public byte[] GetImageAsByteArray()
+        public byte[] GetCurrentImageAsByteArray()
         {
             if (_imageCache != null && _imageCache.HasData)
             {
@@ -63,7 +63,7 @@ namespace IpWebCam3.Services.ImageServices
             return null;
         }
 
-        public byte[] GetImageAsByteArray(int userId, DateTime timeRequested)
+        public byte[] GetNewImageAsByteArray(int userId, DateTime timeRequested)
         {
             return CanReturnCachedImage(userId, timeRequested)
                 ? _imageCache.ImageAsByteArray

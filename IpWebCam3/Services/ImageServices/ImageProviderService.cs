@@ -64,7 +64,7 @@ namespace IpWebCam3.Services.ImageServices
             LogRequestAccessToCache(waitTimeToReadFromCache, userId);
 
             DateTime requestTime = _dateTimeProvider.DateTimeNow;
-            byte[] imageByteArray = _imageFromCacheService.GetImageAsByteArray(userId: userId, timeRequested: requestTime);
+            byte[] imageByteArray = _imageFromCacheService.GetNewImageAsByteArray(userId: userId, timeRequested: requestTime);
 
             return (imageByteArray, requestTime);
         }
@@ -73,7 +73,7 @@ namespace IpWebCam3.Services.ImageServices
         {
             byte[] imageByteArray;
             {
-                imageByteArray = _imageFromCacheService.GetImageAsByteArray();
+                imageByteArray = _imageFromCacheService.GetCurrentImageAsByteArray();
                 LogReadOldImageFromCache(userId);
             }
 

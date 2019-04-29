@@ -54,7 +54,7 @@ namespace IpWebCam3.Tests.Services
             var imgCacheSvc = new ImageFromCacheService(imageCache);
 
             // Assert
-            Assert.IsNull(imgCacheSvc.GetImageAsByteArray());
+            Assert.IsNull(imgCacheSvc.GetCurrentImageAsByteArray());
         }
 
         [Test]
@@ -69,7 +69,7 @@ namespace IpWebCam3.Tests.Services
 
 
             // Assert
-            Assert.IsNotNull(imgCacheSvc.GetImageAsByteArray());
+            Assert.IsNotNull(imgCacheSvc.GetCurrentImageAsByteArray());
         }
 
 
@@ -92,7 +92,7 @@ namespace IpWebCam3.Tests.Services
             var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
 
             // Act
-            byte[] imgBytes = cachingService.GetImageAsByteArray(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
+            byte[] imgBytes = cachingService.GetNewImageAsByteArray(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
             bool resultIsNotNull = imgBytes != null;
 
             // Assert
@@ -156,7 +156,7 @@ namespace IpWebCam3.Tests.Services
             cachingService.UpdateCachedImage(new byte[newImageArraySize], newCacheUpdaterUserId, timeWhenCacheIsRead);
 
             // Assert
-            bool cacheHasBeenUpdated = cachingService.GetImageAsByteArray().Length == newImageArraySize;
+            bool cacheHasBeenUpdated = cachingService.GetCurrentImageAsByteArray().Length == newImageArraySize;
             Assert.That(cacheHasBeenUpdated, Is.EqualTo(expectedSuccess));
         }
 
