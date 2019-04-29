@@ -1,9 +1,9 @@
-﻿using IpWebCam3.Helpers;
+﻿using System;
+using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.Cache;
 using IpWebCam3.Helpers.TimeHelpers;
-using System;
 
-namespace IpWebCam3.Services
+namespace IpWebCam3.Services.ImageServices
 {
     public interface IImageCachingService
     {
@@ -11,12 +11,13 @@ namespace IpWebCam3.Services
         byte[] GetImageAsByteArray(int userId, DateTime timeRequested);
         int WaitBeforeGettingNextImage(int userId, DateTime timeRequested);
         void UpdateCachedImage(byte[] imageByteArray, int userId, DateTime timeUpdated);
+        DateTime CacheLastUpdate { get; }
     }
 
     /// <summary>
     /// Manage the update and access to the image from cache
     /// </summary>
-    public class ImageCachingService : IImageCachingService
+    public class ImageFromCacheService : IImageCachingService
     {
         private readonly ImageCache _imageCache;
 
@@ -31,7 +32,7 @@ namespace IpWebCam3.Services
         private const int MinValueCacheLifeTimeMilliSec = 1;
         private const int MinValueFramesPerSecond = 1;
 
-        public ImageCachingService(ImageCache imageCache,
+        public ImageFromCacheService(ImageCache imageCache,
                                    MiniLogger logger = null,
                                    int cacheLifeTimeMilliSec = 2000,
                                    int framesPerSecond = 5
@@ -171,7 +172,7 @@ namespace IpWebCam3.Services
                 ? CreateMessageWhenCanReturnImage()
                 : CreateMessageWhenCanNotReturnImage(userId, timeRequested);
 
-            statusMessage += ". Requested by userId " + userId + ", at " +
+            statusMessage += ". Requested by userId " + userId + " , at " +
                              DateTimeFormatter.ConvertTimeToCompactString(timeRequested, true);
             _logger?.LogCacheStat(statusMessage);
         }

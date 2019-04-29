@@ -1,7 +1,7 @@
 ﻿using IpWebCam3.Helpers.Cache;
-using IpWebCam3.Services;
 using NUnit.Framework;
 using System;
+using IpWebCam3.Services.ImageServices;
 
 namespace IpWebCam3.Tests.Services
 {
@@ -12,7 +12,7 @@ namespace IpWebCam3.Tests.Services
         [Test]
         public void Constructor_InvalidNullImageCache_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new ImageCachingService(
+            Assert.Throws<ArgumentNullException>(() => new ImageFromCacheService(
                                                                 imageCache: null,
                                                                 logger: null,
                                                                 cacheLifeTimeMilliSec: 2500,
@@ -26,7 +26,7 @@ namespace IpWebCam3.Tests.Services
         {
             // Arrange
             var imageCache = new ImageCache();
-            Assert.Throws<ArgumentException>(() => new ImageCachingService(imageCache, null, expiration, fps));
+            Assert.Throws<ArgumentException>(() => new ImageFromCacheService(imageCache, null, expiration, fps));
         }
 
         [TestCase(2, 2)]
@@ -37,7 +37,7 @@ namespace IpWebCam3.Tests.Services
             var imageCache = new ImageCache();
 
             // Act
-            var imgCacheSvc = new ImageCachingService(imageCache, null, expiration, fps);
+            var imgCacheSvc = new ImageFromCacheService(imageCache, null, expiration, fps);
 
             // Assert
             Assert.IsNotNull(imgCacheSvc);
@@ -51,7 +51,7 @@ namespace IpWebCam3.Tests.Services
             var imageCache = new ImageCache();
 
             // Act
-            var imgCacheSvc = new ImageCachingService(imageCache);
+            var imgCacheSvc = new ImageFromCacheService(imageCache);
 
             // Assert
             Assert.IsNull(imgCacheSvc.GetImageAsByteArray());
@@ -65,7 +65,7 @@ namespace IpWebCam3.Tests.Services
             imageCache.UpdateImage(new byte[2], 1, DateTime.MaxValue);
 
             // Act
-            var imgCacheSvc = new ImageCachingService(imageCache);
+            var imgCacheSvc = new ImageFromCacheService(imageCache);
 
 
             // Assert
@@ -89,7 +89,7 @@ namespace IpWebCam3.Tests.Services
 
             byte[] imageBytes = cacheHasData ? new byte[2] : null;
             ImageCache imageCache = CreateImageCache(imageBytes, cacheUpdaterUserId, cacheLastUpdate);
-            var cachingService = new ImageCachingService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
+            var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
 
             // Act
             byte[] imgBytes = cachingService.GetImageAsByteArray(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
@@ -123,7 +123,7 @@ namespace IpWebCam3.Tests.Services
             byte[] imageBytes = cacheHasData ? new byte[2] : null;
 
             ImageCache imageCache = CreateImageCache(imageBytes, cacheUpdaterUserId, cacheLastUpdate);
-            var cachingService = new ImageCachingService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
+            var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
             int fpsTimeBetweenTwoFramesMilliSec = 1000 / cacheFps;
 
             // Act
@@ -151,7 +151,7 @@ namespace IpWebCam3.Tests.Services
             byte[] imageBytes = cacheHasData ? new byte[oldImageArraySize] : null;
 
             ImageCache imageCache = CreateImageCache(imageBytes, oldUpdaterUserId, cacheLastUpdate);
-            var cachingService = new ImageCachingService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
+            var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
             var newImageArraySize = 44;
 
             // Act
