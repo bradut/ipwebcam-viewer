@@ -53,7 +53,7 @@ namespace IpWebCam3.Services.ImageServices
 
             imageByteArray = CanReadImageFromWebCam(userId, requestTime)
                 ? ReadImageFromWebCam(userId, userUtc, requestTime)
-                : ReadOldImageFromCache(userId);
+                : ReadCurrentImageFromCache(userId);
 
             return imageByteArray;
         }
@@ -69,7 +69,7 @@ namespace IpWebCam3.Services.ImageServices
             return (imageByteArray, requestTime);
         }
 
-        private byte[] ReadOldImageFromCache(int userId)
+        private byte[] ReadCurrentImageFromCache(int userId)
         {
             byte[] imageByteArray;
             {
@@ -220,12 +220,13 @@ namespace IpWebCam3.Services.ImageServices
         private void LogRequestAccessToCache(int waitTime, int userId)
         {
             var cacheReaderDelay = (int)_lastCacheAccess.Subtract(_imageFromCacheService.CacheLastUpdate).TotalMilliseconds;
-            _logger?.LogCacheStat($"Request access to cache. " +
-                                $"userId: {userId}  " +
-                                $"LastUpdate: {DateTimeFormatter.ConvertTimeToCompactString(_imageFromCacheService.CacheLastUpdate, true)}.  " +
-                                $"lastCacheAccess  {DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true)}. " +
-                                $"Delta T: {cacheReaderDelay} ms. " +
-                                $"Waited {waitTime} ms. ");
+            _logger?.LogCacheStat("Request access to cache. " +
+                                  "                     " +
+                                  $"LastUpdate: {DateTimeFormatter.ConvertTimeToCompactString(_imageFromCacheService.CacheLastUpdate, true)}.  " +
+                                  $"lastCacheAccess  {DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true)}. " +
+                                  $"Delta T: {cacheReaderDelay} ms. " +
+                                  $"Waited {waitTime} ms. " +
+                                  $"userId: {userId}  ");
         }
 
         private static (string strPrevTime, string strRequestTime) GetLogDateTimeValuesAsStrings(

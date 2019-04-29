@@ -109,13 +109,7 @@ namespace IpWebCam3.Services.ImageServices
 
             var timeToWait = 0;
 
-            // grant immediate access to requests occuring whiles reading the first frame
-            if (FpsTimeBetweenTwoImagesMilliSec >= requestDelay)
-            {
-                return timeToWait;
-            }
-
-            const int safetyFactor = 100; // expect to read 100 times more frames from a stale cache
+            const int safetyFactor = 100; // expect to read 100 times more frames from a stale cache before returning wait time = 0
             int maxFramesToReadFromSameCache = _framesPerSecond * _cacheLifeTimeMilliSec / 1000 * safetyFactor;
 
             for (var frameNumber = 1; frameNumber <= maxFramesToReadFromSameCache; frameNumber++)
@@ -154,14 +148,14 @@ namespace IpWebCam3.Services.ImageServices
         {
             var statMessage = "UPDATE cache . ";
             string action = _imageCache.UserId == newUserId ? "Updated" : "Replaced";
-            statMessage += $"{action}= userId: " + _imageCache.UserId + ", LastUpdate: "
+            statMessage += $"{action}= userId: " + _imageCache.UserId + " , LastUpdate: "
                            + DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true) + " ";
             return statMessage;
         }
 
         private void LogCacheHasBeenUpdated(string statMessage)
         {
-            statMessage += " With = userId: " + _imageCache.UserId + ", LastUpdate: "
+            statMessage += " With = userId: " + _imageCache.UserId + " , LastUpdate: "
                            + DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true) + " ";
             _logger?.LogCacheStat(statMessage);
         }
@@ -196,7 +190,7 @@ namespace IpWebCam3.Services.ImageServices
         {
             return "From cache  . " +
                    " Current = userId: " + _imageCache.UserId
-                   + ", LastUpdate: " +
+                   + " , LastUpdate: " +
                    DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true);
         }
     }

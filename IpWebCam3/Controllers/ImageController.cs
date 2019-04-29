@@ -56,7 +56,7 @@ namespace IpWebCam3.Controllers
 
 
         [HttpGet]
-        public HttpResponseMessage Get(string id)
+        public HttpResponseMessage GetImage(string id)
         {
             byte[] imageByteArray = _imageProviderService.GetImageAsByteArray(UserId, id);
 
@@ -89,10 +89,10 @@ namespace IpWebCam3.Controllers
             ImageFileWriter.WriteImageToFile(image, DateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
         }
 
-        private bool IsTimeToWriteAPicture()
+        private static bool IsTimeToWriteAPicture()
         {
             return
-                DateTimeProvider.DateTimeNow.Second >= 00 && // provide an interval to avoid
+                DateTimeProvider.DateTimeNow.Second >= 00 && // provide an interval of a few seconds to avoid
                 DateTimeProvider.DateTimeNow.Second <= 03 // missing time ending in '00' seconds
             &&
             (

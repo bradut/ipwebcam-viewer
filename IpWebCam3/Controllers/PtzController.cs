@@ -21,12 +21,13 @@ namespace IpWebCam3.Controllers
             string ptzCommand = allUrlKeyValues.FirstOrDefault(k => k.Key == "ptz").Value;
             string ptzParameters = allUrlKeyValues.FirstOrDefault(k => k.Key == "prms").Value;
 
-            if (string.IsNullOrWhiteSpace(ptzCommand)) return new HttpResponseMessage(HttpStatusCode.OK);
-
+            if (string.IsNullOrWhiteSpace(ptzCommand))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
 
             Result result = PtzCgiService.ExecutePtzCommand(ptzCommand, ptzParameters,
                                                             _configuration.CameraConnectionInfo);
-
             if (result.Error != null)
             {
                 Logger.LogError(result.Message);

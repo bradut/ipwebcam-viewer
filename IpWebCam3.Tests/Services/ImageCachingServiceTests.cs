@@ -102,8 +102,6 @@ namespace IpWebCam3.Tests.Services
 
         [TestCase(99, StrCacheLastUpdate, 2000, 5, true, 99, 1000, 0)]  // No wait time: updaterId == readerId
         [TestCase(10, StrCacheLastUpdate, 2000, 5, true, 99, 1000, 0)]  // No wait time: FPS time btw images (200 ms) <  cacheReaderDelay = (1000 ms)
-        [TestCase(10, StrCacheLastUpdate, 2000, 5, true, 99, 50, 0)]    // No wait time (0 ms) = FPS time btw images (200 ms) > cacheReaderDelay ( 50 ms)
-        [TestCase(10, StrCacheLastUpdate, 2000, 5, true, 99, 125, 0)]   // No wait time (  ms) = FPS time btw images (200 ms) > cacheReaderDelay (125 ms)
         [TestCase(10, StrCacheLastUpdate, 2000, 5, true, 99, 225, 175)] // Wait time ( 75 ms) = FPS time btw images (200 ms) - cacheReaderDelay (225 = 1 frame *200 ms/frame + k25 ms)
         [TestCase(10, StrCacheLastUpdate, 2000, 5, true, 99, 999, 1)]   // Wait time ( 1 ms) = FPS time btw images (200 ms) - cacheReaderDelay (999 = 4 frames *200+199 ms)
         [TestCase(10, StrCacheLastUpdate, 2000, 5, true, 99, 1000, 0)]  // Wait time ( 0 ms) = FPS time btw images (200 ms) - cacheReaderDelay (1000 = 5*200 ms)
