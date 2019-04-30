@@ -5,7 +5,7 @@ using IpWebCam3.Helpers.TimeHelpers;
 
 namespace IpWebCam3.Services.ImageServices
 {
-    public interface IImageCachingService
+    public interface IImageFromCacheService
     {
         byte[] GetCurrentImageAsByteArray();
         byte[] GetNewImageAsByteArray(int userId, DateTime timeRequested);
@@ -17,7 +17,7 @@ namespace IpWebCam3.Services.ImageServices
     /// <summary>
     /// Manage the update and access to the image from cache
     /// </summary>
-    public class ImageFromCacheService : IImageCachingService
+    public class ImageFromCacheService : IImageFromCacheService
     {
         private readonly ImageCache _imageCache;
 

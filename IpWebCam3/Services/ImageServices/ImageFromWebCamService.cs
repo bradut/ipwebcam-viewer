@@ -5,10 +5,15 @@ using System.Net;
 
 namespace IpWebCam3.Services.ImageServices
 {
+    public interface IImageFromWebCamService
+    {
+        Image GetImage(string userUtc);
+    }
+
     /// <summary>
     /// Get an image from an IP camera
     /// </summary>
-    public class ImageFromWebCamService
+    public class ImageFromWebCamService : IImageFromWebCamService
     {
         private readonly CameraConnectionInfo _connectionInfo;
 
@@ -16,9 +21,8 @@ namespace IpWebCam3.Services.ImageServices
         {
             _connectionInfo = connectionInfo;
         }
-
-
-        public Image GetImage(string userUtc = null)
+        
+        public Image GetImage(string userUtc)
         {
             return GetImage(_connectionInfo.Username,
                 _connectionInfo.Password,
@@ -29,9 +33,9 @@ namespace IpWebCam3.Services.ImageServices
 
         private static Image GetImage(string username, string password, string url, string webpage, int port)
         {
-            HttpWebResponse cameraResponse = HttpBasicAuthenticationBypassService
+            HttpWebResponse cameraHttpResponse = HttpBasicAuthenticationBypassService
                                                  .DoWebRequest(username, password, url, webpage, port);
-            Image image = GetImageFromHttpWebResponse(cameraResponse);
+            Image image = GetImageFromHttpWebResponse(cameraHttpResponse);
 
             return image;
         }

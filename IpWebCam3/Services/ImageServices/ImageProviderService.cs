@@ -7,11 +7,17 @@ using System.Drawing;
 
 namespace IpWebCam3.Services.ImageServices
 {
-    // Logic to decide if the image is read from WebCam or from Cache
-    public class ImageProviderService
+    public interface IImageProviderService
     {
-        private readonly IImageCachingService _imageFromCacheService;
-        private readonly ImageFromWebCamService _imageFromWebCamService;
+        bool CanReadImageFromWebCam(int userId, DateTime requestTime);
+        byte[] GetImageAsByteArray(int userId, string userUtc);
+    }
+
+    // Logic to decide if the image is read from WebCam or from Cache
+    public class ImageProviderService : IImageProviderService
+    {
+        private readonly IImageFromCacheService _imageFromCacheService;
+        private readonly IImageFromWebCamService _imageFromWebCamService;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly MiniLogger _logger;
         private DateTime _lastCacheAccess;
@@ -21,8 +27,8 @@ namespace IpWebCam3.Services.ImageServices
 
 
         public ImageProviderService(
-            IImageCachingService imageFromCacheService,
-            ImageFromWebCamService imageFromWebCamService,
+            IImageFromCacheService imageFromCacheService,
+            IImageFromWebCamService imageFromWebCamService,
             IDateTimeProvider dateTimeProvider,
             MiniLogger logger,
             int cacheUpdaterExpirationMilliSec,

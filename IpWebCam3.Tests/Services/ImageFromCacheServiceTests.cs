@@ -6,7 +6,7 @@ using IpWebCam3.Services.ImageServices;
 namespace IpWebCam3.Tests.Services
 {
     [TestFixture]
-    public class ImageCachingServiceTests
+    public class ImageFromCacheServiceTests
     {
 
         [Test]

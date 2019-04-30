@@ -18,7 +18,7 @@ namespace IpWebCam3.Controllers
         private static readonly ConcurrentDictionary<int, string> ConnectedUsers = new ConcurrentDictionary<int, string>();
 
         private readonly string _snapshotImagePath;
-        private readonly ImageProviderService _imageProviderService;
+        private readonly IImageProviderService _imageProviderService;
         
         // ToDo: Use DI to inject these values
         public ImageController()
