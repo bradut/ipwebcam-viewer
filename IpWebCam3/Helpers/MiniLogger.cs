@@ -44,9 +44,10 @@ namespace IpWebCam3.Helpers
             WriteToLogFile(_logErrorsPath, errorMessage);
         }
 
-        public void LogUserIp(string text)
+        public void LogUserIp(string userIp, int userId, string currentBrowserInfo) //(string text)
         {
-            WriteToLogFile(_logUserIPsPath, text.Replace(",", "_"));
+            string logInfo = userIp + "," + userId + "," + currentBrowserInfo.Replace(",", "_");
+            WriteToLogFile(_logUserIPsPath, logInfo);
         }
 
 

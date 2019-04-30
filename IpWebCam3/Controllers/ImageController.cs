@@ -106,7 +106,7 @@ namespace IpWebCam3.Controllers
         private void LogNewUserHasConnected()
         {
             string currentBrowserInfo = HttpContextHelper.GetBrowserInfo(HttpContext.Current);
-            Logger?.LogUserIp(UserIp + "," + UserIp + "," + currentBrowserInfo);
+            Logger?.LogUserIp(UserIp, UserId, currentBrowserInfo);
         }
     }
 }
