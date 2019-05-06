@@ -33,7 +33,8 @@ Known issues:
 ToDos:
 - User Experience:
   - hide PTZ controls from non-admin users
-  - instead of PTZ controls, have the camera follow pre-defined preset-points
+  - use sliders instead of arrow, for absolute positioning
+  - follow pre-defined preset-points instead of using PTZ controls
   - privacy: Should not broadcast images from certain private areas
 - Implementation:
   - Use Dependency Injection
