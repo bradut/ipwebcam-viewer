@@ -34,7 +34,7 @@ ToDos:
 - User Experience:
   - hide PTZ controls from non-admin users
   - instead of PTZ controls, have the camera follow pre-defined preset-points
-  - privacy: do not broadcast images from certain private areas
+  - privacy: Should not broadcast images from certain private areas
 - Implementation:
   - Use Dependency Injection
   - Increase testing coverage
