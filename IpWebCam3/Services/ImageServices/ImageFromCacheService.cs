@@ -40,10 +40,10 @@ namespace IpWebCam3.Services.ImageServices
             )
         {
             _imageCache = imageCache ?? throw new ArgumentNullException(nameof(imageCache));
-            if (cacheLifeTimeMilliSec <= MinValueCacheLifeTimeMilliSec) throw new ArgumentException(
+            if (cacheLifeTimeMilliSec < MinValueCacheLifeTimeMilliSec) throw new ArgumentException(
                         $"{nameof(cacheLifeTimeMilliSec)} too small: " +
                         $"{cacheLifeTimeMilliSec} < {MinValueCacheLifeTimeMilliSec}");
-            if (framesPerSecond <= MinValueFramesPerSecond) throw new ArgumentException(
+            if (framesPerSecond < MinValueFramesPerSecond) throw new ArgumentException(
                         $"{nameof(framesPerSecond)} too small: " +
                         $"{framesPerSecond} < {MinValueFramesPerSecond}");
 

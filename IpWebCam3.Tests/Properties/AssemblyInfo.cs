@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using NUnit.Framework;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -33,3 +34,7 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+// run tests in parallel using NUnit 3
+// https://templecoding.com/blog/2016/02/29/running-tests-in-parallel-with-nunit3/
+[assembly: Parallelizable(ParallelScope.Fixtures)]

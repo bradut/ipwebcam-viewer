@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
+using IpWebCam3.Models;
 
 namespace IpWebCam3.Controllers
 {
@@ -34,13 +35,15 @@ namespace IpWebCam3.Controllers
 
             var cacheUpdaterExpirationMilliSec = 600;
             DateTime lastImageAccess = DateTimeProvider.DateTimeNow;
+            var cacheUpdater = new CacheUpdaterInfo();
             _imageProviderService = new ImageProviderService(imageFromCacheService,
                                                              imageFromWebCamService,
                                                              DateTimeProvider,
                                                              Logger,
                                                              cacheUpdaterExpirationMilliSec,
                                                              _configuration.ErrorImageLogPath,
-                                                             lastImageAccess);
+                                                             lastImageAccess,
+                                                             cacheUpdater);
 
             AddConnectedUser();
         }

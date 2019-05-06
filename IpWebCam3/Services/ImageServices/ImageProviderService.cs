@@ -23,8 +23,9 @@ namespace IpWebCam3.Services.ImageServices
         private DateTime _lastCacheAccess;
         private readonly int _cacheUpdaterExpirationMilliSec;
         private readonly string _imageErrorLogoUrl;
-        private readonly CacheUpdaterInfo _cacheUpdater = new CacheUpdaterInfo();
+        private readonly CacheUpdaterInfo _cacheUpdater;
 
+        private const int MinValueCacheUpdaterLifeTimeMilliSec = 1;
 
         public ImageProviderService(
             IImageFromCacheService imageFromCacheService,
@@ -33,15 +34,22 @@ namespace IpWebCam3.Services.ImageServices
             MiniLogger logger,
             int cacheUpdaterExpirationMilliSec,
             string imageErrorLogoUrl,
-            DateTime lastCacheAccess)
+            DateTime lastCacheAccess,
+            CacheUpdaterInfo cacheUpdater
+            )
         {
-            _imageFromCacheService = imageFromCacheService;
-            _imageFromWebCamService = imageFromWebCamService;
-            _dateTimeProvider = dateTimeProvider;
+
+            if (cacheUpdaterExpirationMilliSec < MinValueCacheUpdaterLifeTimeMilliSec) throw new ArgumentException(
+                nameof(cacheUpdaterExpirationMilliSec) + $" = {cacheUpdaterExpirationMilliSec} < {MinValueCacheUpdaterLifeTimeMilliSec}");
+
+            _imageFromCacheService = imageFromCacheService ?? throw new ArgumentNullException(nameof(imageFromCacheService));
+            _imageFromWebCamService = imageFromWebCamService ?? throw new ArgumentNullException(nameof(imageFromWebCamService));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
             _logger = logger;
             _cacheUpdaterExpirationMilliSec = cacheUpdaterExpirationMilliSec;
             _imageErrorLogoUrl = imageErrorLogoUrl;
             _lastCacheAccess = lastCacheAccess;
+            _cacheUpdater = cacheUpdater ?? new CacheUpdaterInfo();
         }
 
 
@@ -57,7 +65,11 @@ namespace IpWebCam3.Services.ImageServices
                 return imageByteArray;
             }
 
-            imageByteArray = CanReadImageFromWebCam(userId, requestTime)
+            bool canReadImageFromWebCam = CanReadImageFromWebCam(userId, requestTime);
+
+            if (canReadImageFromWebCam) _cacheUpdater.Update(userId, requestTime);
+            
+            imageByteArray = canReadImageFromWebCam
                 ? ReadImageFromWebCam(userId, userUtc, requestTime)
                 : ReadCurrentImageFromCache(userId);
 
@@ -149,8 +161,6 @@ namespace IpWebCam3.Services.ImageServices
                 {
                     LogCacheUpdaterRejected(userId, _cacheUpdater.LastUpdate, requestTime);
                 }
-
-                if (canReadFromWebCam) _cacheUpdater.Update(userId, requestTime);
             }
 
             return canReadFromWebCam;
@@ -159,7 +169,7 @@ namespace IpWebCam3.Services.ImageServices
         private bool IsCurrentCacheUpdaterUserOverdue(DateTime requestTime)
         {
             return requestTime.Subtract(_cacheUpdater.LastUpdate).TotalMilliseconds >
-                                     _cacheUpdaterExpirationMilliSec;
+                                        _cacheUpdaterExpirationMilliSec;
         }
 
 
@@ -172,8 +182,6 @@ namespace IpWebCam3.Services.ImageServices
             string reqBy = " .Requested by userId " + userId + " , at " + strRequestTime;
             _logger?.LogCacheStat(msg + reqBy);
         }
-
-
 
         private void LogCacheUpdaterReplaced(int userId, DateTime lastUpdate, DateTime requestTime)
         {
