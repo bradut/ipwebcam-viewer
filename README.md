@@ -1,5 +1,5 @@
 # ipwebcam-viewer
-Web Viewer for my IP WebCam: PZT, C#
+Web Viewer for my IP WebCam: PTZ, C#
 
 This project allows viewing real-time images from an IP WebCam.
 
