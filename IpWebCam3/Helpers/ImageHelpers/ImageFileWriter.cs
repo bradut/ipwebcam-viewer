@@ -11,7 +11,7 @@ namespace IpWebCam3.Helpers.ImageHelpers
         private static readonly object LockImageFileWriter = new object();
 
         public static void WriteImageToFile(Image image, DateTime dateTime,
-                                            string imageDirectory, MiniLogger logger,
+                                            string imageDirectory, IMiniLogger logger,
                                             bool roundSecondsToZero = true)
         {
             if (image == null) return;
@@ -36,7 +36,7 @@ namespace IpWebCam3.Helpers.ImageHelpers
             return dateTime;
         }
 
-        private static void WriteImageToFile(Image image, string snapshotImagePath, string dateTimeCompact, MiniLogger logger)
+        private static void WriteImageToFile(Image image, string snapshotImagePath, string dateTimeCompact, IMiniLogger logger)
         {
             TryCreateDir(snapshotImagePath, logger);
 
@@ -67,7 +67,7 @@ namespace IpWebCam3.Helpers.ImageHelpers
             }
         }
 
-        private static void TrySaveImageAgain(Image image, MiniLogger logger, string imagePath)
+        private static void TrySaveImageAgain(Image image, IMiniLogger logger, string imagePath)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace IpWebCam3.Helpers.ImageHelpers
             }
         }
 
-        private static void TryCreateDir(string snapshotImagePath, MiniLogger logger)
+        private static void TryCreateDir(string snapshotImagePath, IMiniLogger logger)
         {
             string directoryName = Path.GetDirectoryName(snapshotImagePath);
             try
@@ -108,9 +108,10 @@ namespace IpWebCam3.Helpers.ImageHelpers
                 {
                     image.Save(memoryStream, ImageFormat.Jpeg);
                     byte[] bytes = memoryStream.ToArray();
-                    fileStream.Write(bytes, 0, bytes.Length);
+                    fileStream.WriteAsync(bytes, 0, bytes.Length);
                 }
             }
         }
+
     }
 }

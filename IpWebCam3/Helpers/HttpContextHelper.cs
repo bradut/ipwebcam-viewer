@@ -10,11 +10,12 @@ namespace IpWebCam3.Helpers
             string userAgent = context.Request.UserAgent;
             string userHostAddress = context.Request.UserHostAddress;
             string userHostName = context.Request.UserHostName;
-            string userLanguages = "";
-            if (context.Request.UserLanguages != null) userLanguages = string.Join(",", context.Request.UserLanguages);
+            string userLanguages = context.Request.UserLanguages != null
+                ? string.Join(",", context.Request.UserLanguages)
+                : "";
 
-            string all = userIp + userAgent + userHostAddress + userHostName + userLanguages;
-            int hashValue = all.GetHashCode();
+            string allProperties = userIp + userAgent + userHostAddress + userHostName + userLanguages;
+            int hashValue = allProperties.GetHashCode();
 
             return hashValue;
         }
@@ -22,12 +23,12 @@ namespace IpWebCam3.Helpers
         public static string GetBrowserInfo(HttpContext context)
         {
             var httpRequestBase = new HttpRequestWrapper(context.Request);
-            var browserCapabilities = httpRequestBase.Browser;
+            HttpBrowserCapabilitiesBase browserCapabilities = httpRequestBase.Browser;
             string browserAndVersion = (browserCapabilities.Browser + " " + browserCapabilities.Version).Replace(",", " ");
 
             return browserAndVersion;
         }
-        
+
         public static string GetIpFromHttpContext(HttpContext context)
         {
             string ip =
@@ -45,7 +46,7 @@ namespace IpWebCam3.Helpers
         private static string GetLocalHostIp4Address()
         {
             string ip4Address = string.Empty;
-            string dnsIp = "192.168.";
+            const string dnsIp = "192.168.";
 
             foreach (IPAddress ipAddress in Dns.GetHostAddresses(Dns.GetHostName()))
             {

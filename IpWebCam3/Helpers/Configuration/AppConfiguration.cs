@@ -1,39 +1,39 @@
-﻿using IpWebCam3.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using IpWebCam3.Models;
 
-namespace IpWebCam3.Helpers
+namespace IpWebCam3.Helpers.Configuration
 {
     /// <summary>
-    /// Singleton: Image Handler Configuration
+    /// App Configuration (Singleton)
     /// </summary>
-    public class ImageHandlerConfiguration
+    public class AppConfiguration
     {
-        private static ImageHandlerConfiguration _instance;
+        private static AppConfiguration _appConfigInstance;
 
         private static readonly object LockMutex = new object();
 
         public readonly string AppRootDir =
             System.Web.Hosting.HostingEnvironment.MapPath(HttpRuntime.AppDomainAppVirtualPath);
 
-        public static ImageHandlerConfiguration Instance
+        public static AppConfiguration Instance
         {
             get
             {
-                if (_instance == null)
+                if (_appConfigInstance == null)
                 {
                     lock (LockMutex)
                     {
-                        if (_instance == null)
+                        if (_appConfigInstance == null)
                         {
-                            _instance = new ImageHandlerConfiguration();
+                            _appConfigInstance = new AppConfiguration();
                         }
                     }
                 }
 
-                return _instance;
+                return _appConfigInstance;
             }
         }
 
@@ -51,6 +51,13 @@ namespace IpWebCam3.Helpers
 
         public string ErrorImageLogPath { get; set; }
 
+        public int CameraFps { get; set; }
+
+        public int CacheLifeTimeMilliSec { get; set; }
+
+        public int CacheUpdaterExpirationMilliSec { get; set; }
+
+
         public bool IsValid
         {
             get
@@ -60,7 +67,7 @@ namespace IpWebCam3.Helpers
             }
         }
 
-        private ImageHandlerConfiguration()
+        private AppConfiguration()
         {
             lock (LockMutex)
             {
@@ -84,7 +91,7 @@ namespace IpWebCam3.Helpers
             string webCamUrl = System.Configuration.ConfigurationManager.AppSettings["MediaServerUrl"];
             string webCamWebPage = System.Configuration.ConfigurationManager.AppSettings["MediaServerImagePath"];
             int.TryParse(System.Configuration.ConfigurationManager.AppSettings["MediaServerPort"], out int webCamPort);
-            
+
             CameraConnectionInfo = new CameraConnectionInfo
             (
                 username: webCamUserName,
@@ -107,6 +114,21 @@ namespace IpWebCam3.Helpers
             CacheStatsLogPath = AppRootDir + (logCacheStatsPath ?? @"\App_Data\logs\cacheStats.txt");
             SnapShotImagePath = AppRootDir + (snapShotImagePath ?? @"\App_Data\outputimages\");
             ErrorImageLogPath = AppRootDir + (imageErrorLogoPath ?? @"images\earth_hd_1.jpg");
+
+            CameraFps = int.TryParse(System.Configuration.ConfigurationManager.AppSettings["CameraFPS"], out int cameraFps)
+                ? cameraFps
+                : 5;
+
+            CacheLifeTimeMilliSec = int.TryParse(System.Configuration.ConfigurationManager.AppSettings["CacheLifeTimeMilliSec"],
+                out int cacheLifeTimeMilliSec)
+                ? cacheLifeTimeMilliSec
+                : 2000;
+
+            CacheUpdaterExpirationMilliSec = int.TryParse(
+                System.Configuration.ConfigurationManager.AppSettings["CacheUpdaterExpirationMilliSec"],
+                out int cacheUpdaterExpirationMilliSec)
+                ? cacheUpdaterExpirationMilliSec
+                : 600;
         }
 
         public IEnumerable<string> GetNullValueProperties()
@@ -122,12 +144,12 @@ namespace IpWebCam3.Helpers
             return retVal;
         }
 
-        // allow re-reading values from config files
+        // Allow re-reading values from the config file
         public void Reset()
         {
             lock (LockMutex)
             {
-                _instance = null;
+                _appConfigInstance = null;
             }
         }
 

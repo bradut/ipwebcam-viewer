@@ -1,5 +1,4 @@
-﻿using IpWebCam3.Helpers.Cache;
-using IpWebCam3.Services.ImageServices;
+﻿using IpWebCam3.Services.ImageServices;
 using NUnit.Framework;
 using System;
 
@@ -13,7 +12,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
         public void Constructor_InvalidNullImageCache_Throws()
         {
             Assert.Throws<ArgumentNullException>(() => new ImageFromCacheService(
-                                                                imageCache: null,
+                                                                cacheUpdateService: null,
                                                                 logger: null,
                                                                 cacheLifeTimeMilliSec: 2500,
                                                                 framesPerSecond: 10));
@@ -26,9 +25,9 @@ namespace IpWebCam3.Tests.Services.ImageServices
         public void Constructor_InvalidParams_Throws(int expiration, int fps)
         {
             // Arrange
-            var imageCache = new ImageCache();
+            var imageCache = new CacheUpdateService();
             Assert.Throws<ArgumentException>(() => new ImageFromCacheService(
-                                                                imageCache: imageCache,
+                                                                cacheUpdateService: imageCache,
                                                                 logger: null,
                                                                 cacheLifeTimeMilliSec: expiration,
                                                                 framesPerSecond: fps));
@@ -39,7 +38,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
         public void Constructor_ValidParams_HappyPath(int expiration, int fps)
         {
             // Arrange
-            var imageCache = new ImageCache();
+            var imageCache = new CacheUpdateService();
 
             // Act
             var imgCacheSvc = new ImageFromCacheService(imageCache, null, expiration, fps);
@@ -53,7 +52,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
         public void GetImageAsByteArray_NoParamsAndImageCacheHasNoData_ReturnsNull()
         {
             // Arrange
-            var imageCache = new ImageCache();
+            var imageCache = new CacheUpdateService();
 
             // Act
             var imgCacheSvc = new ImageFromCacheService(imageCache);
@@ -66,7 +65,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
         public void GetImageAsByteArray_NoParamsImageCacheHasData_ReturnsNotNull()
         {
             // Arrange
-            var imageCache = new ImageCache();
+            var imageCache = new CacheUpdateService();
             imageCache.UpdateImage(new byte[2], 1, DateTime.MaxValue);
 
             // Act
@@ -93,8 +92,8 @@ namespace IpWebCam3.Tests.Services.ImageServices
             DateTime timeWhenCacheIsRead = cacheLastUpdate.AddMilliseconds(cacheReaderDelay);
 
             byte[] imageBytes = cacheHasData ? new byte[2] : null;
-            ImageCache imageCache = CreateImageCache(imageBytes, cacheUpdaterUserId, cacheLastUpdate);
-            var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
+            CacheUpdateService imageCache = CreateImageCache(imageBytes, cacheUpdaterUserId, cacheLastUpdate);
+            var cachingService = new ImageFromCacheService(cacheUpdateService: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
 
             // Act
             byte[] imgBytes = cachingService.GetNewImageAsByteArray(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
@@ -125,8 +124,8 @@ namespace IpWebCam3.Tests.Services.ImageServices
             DateTime timeWhenCacheIsRead = cacheLastUpdate.AddMilliseconds(cacheReaderDelay);
             byte[] imageBytes = cacheHasData ? new byte[2] : null;
 
-            ImageCache imageCache = CreateImageCache(imageBytes, cacheUpdaterUserId, cacheLastUpdate);
-            var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
+            CacheUpdateService imageCache = CreateImageCache(imageBytes, cacheUpdaterUserId, cacheLastUpdate);
+            var cachingService = new ImageFromCacheService(cacheUpdateService: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
             int fpsTimeBetweenTwoFramesMilliSec = 1000 / cacheFps;
 
             // Act
@@ -153,8 +152,8 @@ namespace IpWebCam3.Tests.Services.ImageServices
             var oldImageArraySize = 2;
             byte[] imageBytes = cacheHasData ? new byte[oldImageArraySize] : null;
 
-            ImageCache imageCache = CreateImageCache(imageBytes, oldUpdaterUserId, cacheLastUpdate);
-            var cachingService = new ImageFromCacheService(imageCache: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
+            CacheUpdateService imageCache = CreateImageCache(imageBytes, oldUpdaterUserId, cacheLastUpdate);
+            var cachingService = new ImageFromCacheService(cacheUpdateService: imageCache, logger: null, cacheLifeTimeMilliSec: cacheLifeTime, framesPerSecond: cacheFps);
             var newImageArraySize = 44;
 
             // Act
@@ -167,9 +166,9 @@ namespace IpWebCam3.Tests.Services.ImageServices
 
 
         //Helpers
-        private ImageCache CreateImageCache(byte[] imgBytes, int userId, DateTime dateUpdated)
+        private CacheUpdateService CreateImageCache(byte[] imgBytes, int userId, DateTime dateUpdated)
         {
-            var imageCache = new ImageCache();
+            var imageCache = new CacheUpdateService();
             imageCache.UpdateImage(imgBytes, userId, dateUpdated);
 
             return imageCache;

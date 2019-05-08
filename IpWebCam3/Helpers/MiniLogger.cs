@@ -4,10 +4,22 @@ using System.IO;
 
 namespace IpWebCam3.Helpers
 {
+    public interface IMiniLogger
+    {
+        void SetUserInfo(string currentUserIp, int currentUserId);
+        void LogError(string errorMessage);
+
+        void LogUserIp(string userIp, int userId, string currentBrowserInfo) //(string text)
+            ;
+
+        void LogUserPtz(string ptzMessage);
+        void LogCacheStat(string statMessage);
+    }
+
     /// <summary>
     /// Simple Logger. To be replaced by ILogger
     /// </summary>
-    public class MiniLogger
+    public class MiniLogger : IMiniLogger
     {
         private static readonly object LockFileWrite = new object();
 
@@ -74,8 +86,9 @@ namespace IpWebCam3.Helpers
             {
                 lock (LockFileWrite)
                 {
-                    string dateTime = _dateTimeProvider.GetCurrentTimeAsString(includeMilliseconds: true);
-                    text = dateTime + "," + text;
+                    DateTime dateTimeNow = _dateTimeProvider.DateTimeNow;
+                    string strDateTime = DateTimeFormatter.ConvertTimeToCompactString(dateTime: dateTimeNow, withMilliSeconds: true);
+                    text = strDateTime + "," + text;
                     File.AppendAllText(logFileName, text + Environment.NewLine);
                 }
             }
