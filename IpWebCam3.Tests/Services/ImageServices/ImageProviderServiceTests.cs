@@ -1,4 +1,5 @@
 ﻿using IpWebCam3.Helpers;
+using IpWebCam3.Helpers.ImageHelpers;
 using IpWebCam3.Helpers.TimeHelpers;
 using IpWebCam3.Models;
 using IpWebCam3.Services.ImageServices;
@@ -6,7 +7,6 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Drawing;
-using IpWebCam3.Helpers.ImageHelpers;
 using Assert = NUnit.Framework.Assert;
 
 namespace IpWebCam3.Tests.Services.ImageServices
@@ -52,8 +52,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
                 logger: _logger,
                 cacheUpdaterExpirationMilliSec: 1000,
                 imageErrorLogoUrl: "some_value",
-                lastCacheAccess: DateTime.Now,
-                cacheUpdater: null
+                cacheUpdaterInfo: null
                 )
             );
         }
@@ -70,8 +69,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
                 logger: _logger,
                 cacheUpdaterExpirationMilliSec: expirationValueMilliSec,
                 imageErrorLogoUrl: "some_value",
-                lastCacheAccess: DateTime.Now,
-                cacheUpdater: null
+                cacheUpdaterInfo: null
                 )
             );
         }
@@ -166,7 +164,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
             _dateTimeProvider.DateTimeNow.Returns(new DateTime(2019, 05, 01, 15, 30, 30, 100));
             _imageFromCacheService.WaitBeforeGettingNextImage(Arg.Any<int>(), Arg.Any<DateTime>()).Returns(0);
 
-            _imageFromCacheService.GetNewImageAsByteArray(Arg.Any<int>(), Arg.Any<DateTime>()).Returns((byte[]) null);
+            _imageFromCacheService.GetNewImageAsByteArray(Arg.Any<int>(), Arg.Any<DateTime>()).Returns((byte[])null);
             var currentImageArrayFromCache = new byte[20];
             _imageFromCacheService.GetCurrentImageAsByteArray().Returns(currentImageArrayFromCache);
 
@@ -189,7 +187,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
 
             Assert.That(imageAsByteArray.Length, Is.EqualTo(currentImageArrayFromCache.Length));
             Assert.That(imageAsByteArray.Length, Is.Not.EqualTo(imageArrayFromWebCam.Length));
-            
+
             Assert.That(_cacheUpdater.UserId, Is.Not.EqualTo(userId));
         }
 
@@ -204,8 +202,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
                 logger: _logger,
                 cacheUpdaterExpirationMilliSec: _cacheUpdaterExpirationMilliSec,
                 imageErrorLogoUrl: "some_value",
-                lastCacheAccess: DateTime.Now,
-                cacheUpdater: _cacheUpdater
+                cacheUpdaterInfo: _cacheUpdater
                 );
         }
 

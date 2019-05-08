@@ -1,13 +1,13 @@
 ﻿using System;
 using IpWebCam3.Models;
 
-namespace IpWebCam3.Helpers.Cache
+namespace IpWebCam3.Services.ImageServices
 {
     /// <summary>
     /// Manage the image from cache
     /// https://docs.microsoft.com/en-us/aspnet/web-forms/overview/data-access/caching-data/caching-data-at-application-startup-cs
     /// </summary>
-    public class ImageCache
+    public class CacheUpdateService
     {
         private static readonly ImageInfo CachedImage = new ImageInfo();
         private static readonly object LockCachedData = new object();
@@ -29,8 +29,8 @@ namespace IpWebCam3.Helpers.Cache
         public DateTime LastUpdate => CachedImage.LastUpdated;
 
         public bool HasData => !(CachedImage?.ImageAsByteArray == null || 
-                                 CachedImage.UpdatedByUserId == 0 || 
-                                 CachedImage.LastUpdated == DateTime.MinValue);
+                                 CachedImage?.UpdatedByUserId == 0 || 
+                                 CachedImage?.LastUpdated == DateTime.MinValue);
 
         public void Clear()
         {

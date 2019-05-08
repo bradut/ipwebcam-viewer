@@ -1,8 +1,6 @@
 ﻿using IpWebCam3.Helpers;
-using IpWebCam3.Helpers.Cache;
 using IpWebCam3.Helpers.ImageHelpers;
 using IpWebCam3.Services.ImageServices;
-using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.IO;
@@ -10,7 +8,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-using IpWebCam3.Models;
+using IpWebCam3.Helpers.Configuration;
+using IpWebCam3.Helpers.TimeHelpers;
 
 namespace IpWebCam3.Controllers
 {
@@ -20,37 +19,22 @@ namespace IpWebCam3.Controllers
 
         private readonly string _snapshotImagePath;
         private readonly IImageProviderService _imageProviderService;
-        
-        // ToDo: Use DI to inject these values
-        public ImageController()
+
+        public ImageController(IImageProviderService imageProviderService,
+                                AppConfiguration configuration, 
+                                IDateTimeProvider dateTimeProvider, 
+                                IMiniLogger logger)
+            : base( configuration,  dateTimeProvider, logger)
         {
-            _snapshotImagePath = _configuration.SnapShotImagePath;
-            
-            var imageCache = new ImageCache();
-            var cacheLifeTimeMilliSec = 2000;
-            var cameraFps = 5;
-            var imageFromCacheService = new ImageFromCacheService(imageCache, Logger, cacheLifeTimeMilliSec, cameraFps);
-
-            var imageFromWebCamService = new ImageFromWebCamService(_configuration.CameraConnectionInfo);
-
-            var cacheUpdaterExpirationMilliSec = 600;
-            DateTime lastImageAccess = DateTimeProvider.DateTimeNow;
-            var cacheUpdater = new CacheUpdaterInfo();
-            _imageProviderService = new ImageProviderService(imageFromCacheService,
-                                                             imageFromWebCamService,
-                                                             DateTimeProvider,
-                                                             Logger,
-                                                             cacheUpdaterExpirationMilliSec,
-                                                             _configuration.ErrorImageLogPath,
-                                                             lastImageAccess,
-                                                             cacheUpdater);
-
+            _imageProviderService = imageProviderService;
+            _snapshotImagePath = AppConfiguration.SnapShotImagePath;
             AddConnectedUser();
         }
 
         private void AddConnectedUser()
         {
-            if (ConnectedUsers.ContainsKey(UserId)) return;
+            if (ConnectedUsers.ContainsKey(UserId))
+                return;
 
             ConnectedUsers.TryAdd(UserId, UserIp);
 
@@ -92,7 +76,8 @@ namespace IpWebCam3.Controllers
             ImageFileWriter.WriteImageToFile(image, DateTimeProvider.DateTimeNow, _snapshotImagePath, Logger);
         }
 
-        private static bool IsTimeToWriteAPicture()
+        // ToDo: read these values from config and move this method out of here
+        private bool IsTimeToWriteAPicture()
         {
             return
                 DateTimeProvider.DateTimeNow.Second >= 00 && // provide an interval of a few seconds to avoid

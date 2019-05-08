@@ -4,12 +4,21 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using IpWebCam3.Helpers;
-using IpWebCam3.Services;
+using IpWebCam3.Helpers.Configuration;
+using IpWebCam3.Helpers.TimeHelpers;
+using IpWebCam3.Services.PtzServices;
 
 namespace IpWebCam3.Controllers
 {
     public class PtzController : BaseApiController
     {
+
+        public PtzController(AppConfiguration configuration, 
+                            IDateTimeProvider dateTimeProvider, 
+                            IMiniLogger logger) 
+            : base(configuration, dateTimeProvider, logger)
+        {}
+
         [HttpGet]
         public HttpResponseMessage ExecutePtzCommand()
         {
@@ -26,16 +35,16 @@ namespace IpWebCam3.Controllers
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
 
-            Result result = PtzCgiService.ExecutePtzCommand(ptzCommand, ptzParameters,
-                                                            _configuration.CameraConnectionInfo);
+            Result result = PtzCgiService.ExecutePtzCommand(ptzCmd: ptzCommand, ptzParameters: ptzParameters,
+                                                            connectionInfo: AppConfiguration.CameraConnectionInfo);
             if (result.Error != null)
             {
-                Logger.LogError(result.Message);
+                Logger?.LogError(result.Message);
                 return new HttpResponseMessage(result.StatusCode);
             }
             else
             {
-                Logger.LogUserPtz(result.Message);
+                Logger?.LogUserPtz(result.Message);
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }

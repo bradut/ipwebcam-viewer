@@ -44,7 +44,8 @@ namespace IpWebCam3.Services.ImageServices
         {
             using (Stream stream = cameraResponse?.GetResponseStream())
             {
-                if (stream == null) return null;
+                if (stream == null)
+                    return null;
 
                 Image image = Image.FromStream(stream);
 

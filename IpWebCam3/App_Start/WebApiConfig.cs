@@ -8,6 +8,10 @@ namespace IpWebCam3
         {
             // Web API configuration and services
 
+            // Dependency injection 
+            // Unity has added in App_Start: UnityWebApiActivator & UnityConfig
+
+
             // Web API routes
             config.MapHttpAttributeRoutes();
 

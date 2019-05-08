@@ -1,7 +1,6 @@
-﻿using System;
-using IpWebCam3.Helpers;
-using IpWebCam3.Helpers.Cache;
+﻿using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.TimeHelpers;
+using System;
 
 namespace IpWebCam3.Services.ImageServices
 {
@@ -19,7 +18,7 @@ namespace IpWebCam3.Services.ImageServices
     /// </summary>
     public class ImageFromCacheService : IImageFromCacheService
     {
-        private readonly ImageCache _imageCache;
+        private readonly CacheUpdateService _cacheUpdateService;
 
         // Do not read from cache images older than this duration:
         private readonly int _cacheLifeTimeMilliSec;
@@ -32,14 +31,14 @@ namespace IpWebCam3.Services.ImageServices
         private const int MinValueCacheLifeTimeMilliSec = 1;
         private const int MinValueFramesPerSecond = 1;
 
-        public ImageFromCacheService(ImageCache imageCache,
-                                   MiniLogger logger = null,
-                                   int cacheLifeTimeMilliSec = 2000,
-                                   int framesPerSecond = 5
+        public ImageFromCacheService(CacheUpdateService cacheUpdateService,
+                                     MiniLogger logger = null,
+                                     int cacheLifeTimeMilliSec = 2001,
+                                     int framesPerSecond = 5
 
             )
         {
-            _imageCache = imageCache ?? throw new ArgumentNullException(nameof(imageCache));
+            _cacheUpdateService = cacheUpdateService ?? throw new ArgumentNullException(nameof(cacheUpdateService));
             if (cacheLifeTimeMilliSec < MinValueCacheLifeTimeMilliSec) throw new ArgumentException(
                         $"{nameof(cacheLifeTimeMilliSec)} too small: " +
                         $"{cacheLifeTimeMilliSec} < {MinValueCacheLifeTimeMilliSec}");
@@ -52,12 +51,12 @@ namespace IpWebCam3.Services.ImageServices
             _logger = logger;
         }
 
-        // Read the image from cache regardless of age, etc 
+        // Read the image from cache regardless of age, updater user id, etc 
         public byte[] GetCurrentImageAsByteArray()
         {
-            if (_imageCache != null && _imageCache.HasData)
+            if (_cacheUpdateService != null && _cacheUpdateService.HasData)
             {
-                return _imageCache.ImageAsByteArray;
+                return _cacheUpdateService.ImageAsByteArray;
             }
 
             return null;
@@ -66,25 +65,25 @@ namespace IpWebCam3.Services.ImageServices
         public byte[] GetNewImageAsByteArray(int userId, DateTime timeRequested)
         {
             return CanReturnCachedImage(userId, timeRequested)
-                ? _imageCache.ImageAsByteArray
+                ? _cacheUpdateService.ImageAsByteArray
                 : null;
         }
 
         private bool CanReturnCachedImage(int userId, DateTime timeRequested)
         {
-            bool canReturnImage = _imageCache != null &&
-                                 _imageCache.HasData &&
-                                 _imageCache.UserId != userId && // *cache updater* user never reads from cache
-                                 IsCachedImageFresh(timeRequested);
+            bool canReturnImage = _cacheUpdateService != null &&
+                                  _cacheUpdateService.HasData &&
+                                  _cacheUpdateService.UserId != userId && // *cache updater* user never reads from cache
+                                  IsCachedImageFresh(timeRequested);
 
             LogCanReturnCachedImage(userId, timeRequested, canReturnImage);
 
             return canReturnImage;
         }
- 
+
         private bool IsCachedImageFresh(DateTime requestMoment)
         {
-            return requestMoment.Subtract(_imageCache.LastUpdate).TotalMilliseconds
+            return requestMoment.Subtract(_cacheUpdateService.LastUpdate).TotalMilliseconds
                    < _cacheLifeTimeMilliSec;
         }
 
@@ -92,9 +91,9 @@ namespace IpWebCam3.Services.ImageServices
         public int WaitBeforeGettingNextImage(int userId, DateTime timeRequested)
         {
             // A user in the role of *cache updater* never reads from cache
-            if (_imageCache.UserId == userId) return 0;
+            if (_cacheUpdateService.UserId == userId) return 0;
 
-            if (_imageCache.LastUpdate >= timeRequested) return 0;
+            if (_cacheUpdateService.LastUpdate >= timeRequested) return 0;
 
             int waitTimeMilliSec = TimeToWaitUntilNextImageIsAvailable(timeRequested);
             System.Threading.Thread.Sleep(waitTimeMilliSec);
@@ -104,7 +103,7 @@ namespace IpWebCam3.Services.ImageServices
 
         private int TimeToWaitUntilNextImageIsAvailable(DateTime timeRequested)
         {
-            double requestDelay = timeRequested.Subtract(_imageCache.LastUpdate).TotalMilliseconds;
+            double requestDelay = timeRequested.Subtract(_cacheUpdateService.LastUpdate).TotalMilliseconds;
             if (requestDelay <= 0) return 0;
 
             var timeToWait = 0;
@@ -131,34 +130,34 @@ namespace IpWebCam3.Services.ImageServices
 
         public void UpdateCachedImage(byte[] imageByteArray, int userId, DateTime timeUpdated)
         {
-            if (_imageCache == null) return;
+            if (_cacheUpdateService == null) return;
 
-            if (_imageCache.LastUpdate >= timeUpdated) return;
+            if (_cacheUpdateService.LastUpdate >= timeUpdated) return;
 
             string logMessage = PrepareUpdateCacheLogMessage(userId);
 
-            _imageCache.UpdateImage(imageByteArray, userId, timeUpdated);
+            _cacheUpdateService.UpdateImage(imageByteArray, userId, timeUpdated);
 
             LogCacheHasBeenUpdated(logMessage);
         }
 
-        public DateTime CacheLastUpdate => _imageCache.LastUpdate;
+        public DateTime CacheLastUpdate => _cacheUpdateService.LastUpdate;
 
 
 
         private string PrepareUpdateCacheLogMessage(int newUserId)
         {
             var statMessage = "UPDATE cache . ";
-            string action = _imageCache.UserId == newUserId ? "Updated" : "Replaced";
-            statMessage += $"{action}= userId: " + _imageCache.UserId + " , LastUpdate: "
-                           + DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true) + " ";
+            string action = _cacheUpdateService.UserId == newUserId ? "Updated" : "Replaced";
+            statMessage += $"{action}= userId: " + _cacheUpdateService.UserId + " , LastUpdate: "
+                           + DateTimeFormatter.ConvertTimeToCompactString(_cacheUpdateService.LastUpdate, true) + " ";
             return statMessage;
         }
 
         private void LogCacheHasBeenUpdated(string statMessage)
         {
-            statMessage += " With = userId: " + _imageCache.UserId + " , LastUpdate: "
-                           + DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true) + " ";
+            statMessage += " With = userId: " + _cacheUpdateService.UserId + " , LastUpdate: "
+                           + DateTimeFormatter.ConvertTimeToCompactString(_cacheUpdateService.LastUpdate, true) + " ";
             _logger?.LogCacheStat(statMessage);
         }
 
@@ -176,11 +175,11 @@ namespace IpWebCam3.Services.ImageServices
         private string CreateMessageWhenCanNotReturnImage(int userId, DateTime timeRequested)
         {
             string reason = string.Empty;
-            if (_imageCache == null) reason += " cache is null ";
+            if (_cacheUpdateService == null) reason += " cache is null ";
             else
             {
-                if (!_imageCache.HasData) reason += "cache has no valid data. ";
-                if (_imageCache.UserId == userId) reason += " same user. ";
+                if (!_cacheUpdateService.HasData) reason += "cache has no valid data. ";
+                if (_cacheUpdateService.UserId == userId) reason += " same user. ";
                 if (!IsCachedImageFresh(timeRequested)) reason += "image too old. ";
             }
 
@@ -191,9 +190,9 @@ namespace IpWebCam3.Services.ImageServices
         private string CreateMessageWhenCanReturnImage()
         {
             return "From cache  . " +
-                   " Current = userId: " + _imageCache.UserId
+                   " Current = userId: " + _cacheUpdateService.UserId
                    + " , LastUpdate: " +
-                   DateTimeFormatter.ConvertTimeToCompactString(_imageCache.LastUpdate, true);
+                   DateTimeFormatter.ConvertTimeToCompactString(_cacheUpdateService.LastUpdate, true);
         }
     }
 }

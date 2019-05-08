@@ -1,9 +1,9 @@
-﻿using IpWebCam3.Helpers;
-using IpWebCam3.Models;
-using System;
+﻿using System;
 using System.Net;
+using IpWebCam3.Helpers;
+using IpWebCam3.Models;
 
-namespace IpWebCam3.Services
+namespace IpWebCam3.Services.PtzServices
 {
     /// <summary>
     /// Execute PTZ (Pan Tilt Zoom) commands by calling camera's CGI API (not ONVIF API)

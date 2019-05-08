@@ -1,64 +1,45 @@
 ﻿using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.TimeHelpers;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+using IpWebCam3.Helpers.Configuration;
 
 namespace IpWebCam3.Controllers
 {
     public class BaseApiController : ApiController
     {
-        // shared, static vars
-        protected readonly ImageHandlerConfiguration _configuration;
-        protected static readonly IDateTimeProvider DateTimeProvider = new DateTimeProvider();
+        protected readonly AppConfiguration AppConfiguration;
+        protected readonly IDateTimeProvider DateTimeProvider;
 
         protected string UserIp { get; set; }
         protected int UserId { get; set; }
 
 
-        private static MiniLogger _logger;
-        protected static MiniLogger Logger
+        protected static IMiniLogger Logger { get; private set; }
+        
+        public BaseApiController(AppConfiguration appConfiguration, IDateTimeProvider dateTimeProvider, IMiniLogger logger)
         {
-            get
-            {
-                ImageHandlerConfiguration cfg = ImageHandlerConfiguration.Instance;
-                return _logger ??
-                       (_logger = new MiniLogger(DateTimeProvider,
-                           cfg.UserIPsLogPath, cfg.UserPtzCmdLogPath,
-                           cfg.ErrorsLogPath, cfg.CacheStatsLogPath));
-            }
-        }
+            AppConfiguration = appConfiguration;
+            DateTimeProvider = dateTimeProvider;
+            Logger = logger;
 
-        protected BaseApiController()
-        {
-            try
-            {
-                _configuration = ImageHandlerConfiguration.Instance;
-            }
-            catch (Exception e)
-            {
-                Logger?.LogError(e.Message);
-                Console.WriteLine(e);
-                throw;
-            }
-            
             UserIp = HttpContextHelper.GetIpFromHttpContext(HttpContext.Current);
             UserId = HttpContextHelper.GetUniqueUserIdFromBrowser(HttpContext.Current, UserIp);
 
             Logger?.SetUserInfo(currentUserId: UserId, currentUserIp: UserIp);
 
-            if (!_configuration.IsValid)
+            if (!AppConfiguration.IsValid)
             {
                 LogInvalidConfiguration();
-                _configuration.Reset();
+                AppConfiguration.Reset();
             }
         }
 
         private void LogInvalidConfiguration()
         {
-            IEnumerable<string> nullProperties = _configuration.GetNullValueProperties();
+            IEnumerable<string> nullProperties = AppConfiguration.GetNullValueProperties();
             string csv = string.Join(",", nullProperties.Where(x => x != null).Select(x => x.ToString()).ToArray());
             Logger?.LogError($"Could not read settings from configuration file: {csv}");
         }
