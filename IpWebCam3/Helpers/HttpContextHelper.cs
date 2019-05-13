@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Web;
 
 namespace IpWebCam3.Helpers
@@ -24,9 +25,57 @@ namespace IpWebCam3.Helpers
         {
             var httpRequestBase = new HttpRequestWrapper(context.Request);
             HttpBrowserCapabilitiesBase browserCapabilities = httpRequestBase.Browser;
-            string browserAndVersion = (browserCapabilities.Browser + " " + browserCapabilities.Version).Replace(",", " ");
+            string browser = browserCapabilities.Browser;
+            string version = browserCapabilities.Version;
+
+            if (browser == "Chrome")
+            {
+                (browser, version) = GetEdgeBrowserInfo(browser, version, httpRequestBase.UserAgent);
+            }
+
+            string browserAndVersion = (browser + " " +version).Replace(",", " ");
 
             return browserAndVersion;
+        }
+
+        // Workaround: Edge browser is identified as Chrome
+        private static (string browser, string version) GetEdgeBrowserInfo(string browser, string version, string userAgent)
+        {
+             if (userAgent == null)
+                 return (browser, version);
+
+             if (!userAgent.Contains("Edge"))
+                 return (browser, version);
+             
+             browser = "Edge";
+             version = GetEdgeBrowserVersion(userAgent, browser);
+
+             return (browser, version);
+        }
+
+        private static string GetEdgeBrowserVersion(string userAgent, string browserName)
+        {
+            string version = string.Empty;
+
+            if (userAgent == null)
+                return version;
+
+            int indexOfBrowserName = userAgent.IndexOf(browserName, StringComparison.Ordinal);
+            if (indexOfBrowserName < 0)
+                return version;
+
+            string browserWithVersion = userAgent.Substring(indexOfBrowserName);
+            int indexOfVersion = browserWithVersion.IndexOf("/", StringComparison.Ordinal);
+            if (indexOfVersion < 1)
+                return version;
+
+            version = browserWithVersion.Substring(indexOfVersion + 1).Trim();
+            if (version.Contains(" "))
+            {
+                version = version.Substring(0, version.IndexOf(" ", StringComparison.Ordinal) - 1);
+            }
+
+            return version;
         }
 
         public static string GetIpFromHttpContext(HttpContext context)

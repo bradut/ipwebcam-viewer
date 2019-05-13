@@ -2,18 +2,17 @@
 using System;
 using System.IO;
 
-namespace IpWebCam3.Helpers
+namespace IpWebCam3.Helpers.Logging
 {
     public interface IMiniLogger
     {
-        void SetUserInfo(string currentUserIp, int currentUserId);
-        void LogError(string errorMessage);
+        void LogError(string errorMessage, int userId, string userIp = null);
 
-        void LogUserIp(string userIp, int userId, string currentBrowserInfo) //(string text)
-            ;
+        void LogUserIp(int userId, string userIp, string currentBrowserInfo);
 
-        void LogUserPtz(string ptzMessage);
-        void LogCacheStat(string statMessage);
+        void LogUserPtz(string ptzMessage, int userId, string userIp);
+
+        void LogCacheStat(string cacheMessage, int userId);
     }
 
     /// <summary>
@@ -29,10 +28,6 @@ namespace IpWebCam3.Helpers
         private static string _logErrorsPath;
         private static string _logCacheStatsPath;
 
-        private string _currentUserIp;
-        private int _currentUserId;
-
-
         public MiniLogger(IDateTimeProvider dateTimeProvider,
                           string logUserIPsPath, string logUserPtzCmdPath,
                           string logErrorsPath, string logCacheStatsPath)
@@ -43,35 +38,32 @@ namespace IpWebCam3.Helpers
             _logErrorsPath = logErrorsPath;
             _logCacheStatsPath = logCacheStatsPath;
         }
+        
 
-        public void SetUserInfo(string currentUserIp, int currentUserId)
+        public void LogError(string errorMessage, int userId, string userIp = null)
         {
-            _currentUserIp = currentUserIp;
-            _currentUserId = currentUserId;
-        }
-
-        public void LogError(string errorMessage)
-        {
-            errorMessage = _currentUserIp + "," + _currentUserId + "," + errorMessage.Replace(",", "_");
+            errorMessage = userIp + "," + userId + "," + errorMessage.Replace(",", "_");
             WriteToLogFile(_logErrorsPath, errorMessage);
         }
 
-        public void LogUserIp(string userIp, int userId, string currentBrowserInfo) //(string text)
+        public void LogUserIp(int userId, string userIp, string currentBrowserInfo)
         {
             string logInfo = userIp + "," + userId + "," + currentBrowserInfo.Replace(",", "_");
             WriteToLogFile(_logUserIPsPath, logInfo);
         }
 
 
-        public void LogUserPtz(string ptzMessage)
+        public void LogUserPtz(string ptzMessage, int userId, string userIp)
         {
-            ptzMessage = _currentUserIp + "," + _currentUserId + "," + ptzMessage.Replace(",", "_");
+            ptzMessage = userIp + "," + userId + "," + ptzMessage.Replace(",", "_");
             WriteToLogFile(_logUserPtzCmdPath, ptzMessage);
         }
 
-        public void LogCacheStat(string statMessage)
+        public void LogCacheStat(string cacheMessage, int userId)
         {
-            WriteToLogFile(_logCacheStatsPath, statMessage.Replace(",", "_"));
+            cacheMessage = cacheMessage.Replace(",", "_");
+            cacheMessage = userId.GetFormattedUserId() + "," + cacheMessage;
+            WriteToLogFile(_logCacheStatsPath, cacheMessage);
         }
 
 
@@ -118,5 +110,6 @@ namespace IpWebCam3.Helpers
                     _dateTimeProvider.DateTimeNow.ToString("_yyyy-MM-dd") + ".txt");
             }
         }
+
     }
 }

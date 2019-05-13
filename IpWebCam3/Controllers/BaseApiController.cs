@@ -5,13 +5,14 @@ using System.Linq;
 using System.Web;
 using System.Web.Http;
 using IpWebCam3.Helpers.Configuration;
+using IpWebCam3.Helpers.Logging;
 
 namespace IpWebCam3.Controllers
 {
     public class BaseApiController : ApiController
     {
         protected readonly AppConfiguration AppConfiguration;
-        protected readonly IDateTimeProvider DateTimeProvider;
+        protected readonly IDateTimeProvider DateTimeProviderInstance;
 
         protected string UserIp { get; set; }
         protected int UserId { get; set; }
@@ -19,16 +20,17 @@ namespace IpWebCam3.Controllers
 
         protected static IMiniLogger Logger { get; private set; }
         
-        public BaseApiController(AppConfiguration appConfiguration, IDateTimeProvider dateTimeProvider, IMiniLogger logger)
+        public BaseApiController(AppConfiguration appConfiguration, 
+                                 IDateTimeProvider dateTimeProvider,
+                                 IMiniLogger logger)
         {
             AppConfiguration = appConfiguration;
-            DateTimeProvider = dateTimeProvider;
+            DateTimeProviderInstance = dateTimeProvider;
             Logger = logger;
 
             UserIp = HttpContextHelper.GetIpFromHttpContext(HttpContext.Current);
             UserId = HttpContextHelper.GetUniqueUserIdFromBrowser(HttpContext.Current, UserIp);
 
-            Logger?.SetUserInfo(currentUserId: UserId, currentUserIp: UserIp);
 
             if (!AppConfiguration.IsValid)
             {
@@ -41,7 +43,8 @@ namespace IpWebCam3.Controllers
         {
             IEnumerable<string> nullProperties = AppConfiguration.GetNullValueProperties();
             string csv = string.Join(",", nullProperties.Where(x => x != null).Select(x => x.ToString()).ToArray());
-            Logger?.LogError($"Could not read settings from configuration file: {csv}");
+            string msg = $"Could not read settings from configuration file: {csv}";
+            Logger?.LogError(msg, UserId, UserIp);
         }
     }
 }
