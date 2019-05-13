@@ -9,36 +9,36 @@ namespace IpWebCam3.Services.ImageServices
     /// </summary>
     public class CacheUpdateService
     {
-        private static readonly ImageInfo CachedImage = new ImageInfo();
+        private static readonly ImageInfo CachedImageInfo = new ImageInfo();
         private static readonly object LockCachedData = new object();
 
         public void UpdateImage(byte[] imgBytes, int userId, DateTime timeUpdated)
         {
             lock (LockCachedData)
             {
-                CachedImage.ImageAsByteArray = imgBytes;
-                CachedImage.UpdatedByUserId = userId;
-                CachedImage.LastUpdated = timeUpdated;
+                CachedImageInfo.ImageAsByteArray = imgBytes;
+                CachedImageInfo.UpdatedByUserId = userId;
+                CachedImageInfo.LastUpdated = timeUpdated;
             }
         }
 
-        public byte[] ImageAsByteArray => CachedImage.ImageAsByteArray;
+        public byte[] ImageAsByteArray => CachedImageInfo.ImageAsByteArray;
 
-        public int UserId => CachedImage.UpdatedByUserId;
+        public int UserId => CachedImageInfo.UpdatedByUserId;
 
-        public DateTime LastUpdate => CachedImage.LastUpdated;
+        public DateTime LastUpdate => CachedImageInfo.LastUpdated;
 
-        public bool HasData => !(CachedImage?.ImageAsByteArray == null || 
-                                 CachedImage?.UpdatedByUserId == 0 || 
-                                 CachedImage?.LastUpdated == DateTime.MinValue);
+        public bool HasData => !(CachedImageInfo?.ImageAsByteArray == null || 
+                                 CachedImageInfo?.UpdatedByUserId == 0 || 
+                                 CachedImageInfo?.LastUpdated == DateTime.MinValue);
 
         public void Clear()
         {
             lock (LockCachedData)
             {
-                CachedImage.ImageAsByteArray = null;
-                CachedImage.UpdatedByUserId = 0;
-                CachedImage.LastUpdated = DateTime.MinValue;
+                CachedImageInfo.ImageAsByteArray = null;
+                CachedImageInfo.UpdatedByUserId = 0;
+                CachedImageInfo.LastUpdated = DateTime.MinValue;
             }
         }
     }

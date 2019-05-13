@@ -3,7 +3,7 @@
 namespace IpWebCam3.Models
 {
     /// <summary>
-    /// Additional info for a cached image
+    /// image data + additional info useful for cache management
     /// </summary>
     public class ImageInfo
     {

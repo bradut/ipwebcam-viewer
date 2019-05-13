@@ -129,7 +129,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
             int fpsTimeBetweenTwoFramesMilliSec = 1000 / cacheFps;
 
             // Act
-            int waitTimeMilliSec = cachingService.WaitBeforeGettingNextImage(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
+            (int waitTimeMilliSec, string reason) = cachingService.WaitBeforeGettingNextImage(userId: cacheReaderUserId, timeRequested: timeWhenCacheIsRead);
 
             // Assert
             Assert.That(waitTimeMilliSec, Is.EqualTo(expectedWaitTimeMilliSec));

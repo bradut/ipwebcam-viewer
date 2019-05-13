@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Web.Http;
 using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.Configuration;
+using IpWebCam3.Helpers.Logging;
 using IpWebCam3.Helpers.TimeHelpers;
 using IpWebCam3.Services.PtzServices;
 
@@ -39,12 +40,12 @@ namespace IpWebCam3.Controllers
                                                             connectionInfo: AppConfiguration.CameraConnectionInfo);
             if (result.Error != null)
             {
-                Logger?.LogError(result.Message);
+                Logger?.LogError(result.Message, UserId, UserIp);
                 return new HttpResponseMessage(result.StatusCode);
             }
             else
             {
-                Logger?.LogUserPtz(result.Message);
+                Logger?.LogUserPtz(result.Message, UserId, UserIp);
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }

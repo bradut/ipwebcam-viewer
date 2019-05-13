@@ -1,10 +1,10 @@
-using System;
-using System.Web.Http;
-using IpWebCam3.Helpers;
 using IpWebCam3.Helpers.Configuration;
+using IpWebCam3.Helpers.Logging;
 using IpWebCam3.Helpers.TimeHelpers;
 using IpWebCam3.Models;
 using IpWebCam3.Services.ImageServices;
+using System;
+using System.Web.Http;
 using Unity;
 using Unity.AspNet.WebApi;
 using Unity.Injection;
@@ -52,9 +52,9 @@ namespace IpWebCam3
             // container.RegisterType<IProductRepository, ProductRepository>();
 
             // Register interfaces
-            AppConfiguration _configuration = AppConfiguration.Instance;
+            AppConfiguration configuration = AppConfiguration.Instance;
             container.RegisterInstance(
-                                _configuration,
+                                configuration,
                                 new ContainerControlledLifetimeManager() //Singleton
                 );
 
@@ -88,7 +88,10 @@ namespace IpWebCam3
                 ));
 
             var cacheUpdater = new CacheUpdaterInfo();
-            container.RegisterInstance(cacheUpdater);
+            container.RegisterInstance(
+                                cacheUpdater,
+                                new ContainerControlledLifetimeManager() //Singleton
+                );
 
             container.RegisterType<IImageProviderService, ImageProviderService>(
                         new InjectionConstructor(
@@ -97,8 +100,8 @@ namespace IpWebCam3
                                 container.Resolve<IDateTimeProvider>(),
                                 container.Resolve<IMiniLogger>(),
                                 container.Resolve<AppConfiguration>().CacheUpdaterExpirationMilliSec,
-                                container.Resolve<AppConfiguration>().ErrorImageLogPath,
-                                container.Resolve<CacheUpdaterInfo>()
+                                container.Resolve<CacheUpdaterInfo>(),
+                                container.Resolve<AppConfiguration>().ErrorImageLogPath
                 ));
 
 

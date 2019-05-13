@@ -1,8 +1,9 @@
-﻿using IpWebCam3.Helpers;
-using IpWebCam3.Helpers.ImageHelpers;
+﻿using IpWebCam3.Helpers.ImageHelpers;
+using IpWebCam3.Helpers.Logging;
 using IpWebCam3.Helpers.TimeHelpers;
 using IpWebCam3.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Drawing;
 
 namespace IpWebCam3.Services.ImageServices
@@ -20,22 +21,33 @@ namespace IpWebCam3.Services.ImageServices
         private readonly IImageFromWebCamService _imageFromWebCamService;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IMiniLogger _logger;
-        private DateTime _lastCacheAccess;
+
+        //private DateTime _lastCacheAccess;
         private readonly int _cacheUpdaterExpirationMilliSec;
-        private readonly string _imageErrorLogoUrl;
         private readonly CacheUpdaterInfo _cacheUpdaterInfo;
+
+        private readonly string _imageErrorLogoUrl;
 
         private const int MinValueCacheUpdaterLifeTimeMilliSec = 1;
 
-        public ImageProviderService(
-            IImageFromCacheService imageFromCacheService,
+        private readonly ConcurrentDictionary<int, DateTime> _usersLastCacheAccess = new ConcurrentDictionary<int, DateTime>();
+
+        private void UpdateLastCacheAccess(int userId, DateTime requestTime)
+        {
+            _usersLastCacheAccess.AddOrUpdate(userId, requestTime, (key, oldValue) => requestTime);
+        }
+        private DateTime GetLastCacheAccess(int userId)
+        {
+            return _usersLastCacheAccess.GetOrAdd(userId, (key) => _dateTimeProvider.DateTimeNow);
+        }
+
+        public ImageProviderService(IImageFromCacheService imageFromCacheService,
             IImageFromWebCamService imageFromWebCamService,
             IDateTimeProvider dateTimeProvider,
             IMiniLogger logger,
             int cacheUpdaterExpirationMilliSec,
-            string imageErrorLogoUrl,
-            CacheUpdaterInfo cacheUpdaterInfo
-            )
+            CacheUpdaterInfo cacheUpdaterInfo,
+            string imageErrorLogoUrl)
         {
             if (cacheUpdaterExpirationMilliSec < MinValueCacheUpdaterLifeTimeMilliSec) throw new ArgumentException(
                 nameof(cacheUpdaterExpirationMilliSec) + $" = {cacheUpdaterExpirationMilliSec} < {MinValueCacheUpdaterLifeTimeMilliSec}");
@@ -45,28 +57,33 @@ namespace IpWebCam3.Services.ImageServices
             _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
             _logger = logger;
             _cacheUpdaterExpirationMilliSec = cacheUpdaterExpirationMilliSec;
-            _imageErrorLogoUrl = imageErrorLogoUrl;
-            _lastCacheAccess = _dateTimeProvider.DateTimeNow;
             _cacheUpdaterInfo = cacheUpdaterInfo ?? new CacheUpdaterInfo();
+            _imageErrorLogoUrl = imageErrorLogoUrl;
         }
 
-
-        // Get image from webCam or from cache
         public byte[] GetImageAsByteArray(int userId, string userUtc)
         {
             (byte[] imageByteArray, DateTime requestTime) = ReadNewImageFromCache(userId);
 
             if (imageByteArray != null)
             {
-                _lastCacheAccess = requestTime;
+                LogNewImageReadFromCache(userId, requestTime);
+
+                UpdateLastCacheAccess(userId, requestTime);
 
                 return imageByteArray;
             }
 
             bool canReadImageFromWebCam = CanReadImageFromWebCam(userId, requestTime);
 
-            if (canReadImageFromWebCam) _cacheUpdaterInfo.Update(userId, requestTime);
-            
+            if (canReadImageFromWebCam)
+            {
+                lock (LockCacheUpdaterOverdue)
+                {
+                    _cacheUpdaterInfo.Update(userId, requestTime);
+                }
+            }
+
             imageByteArray = canReadImageFromWebCam
                 ? ReadImageFromWebCam(userId, userUtc, requestTime)
                 : ReadCurrentImageFromCache(userId);
@@ -76,8 +93,7 @@ namespace IpWebCam3.Services.ImageServices
 
         private (byte[] imageByteArray, DateTime requestTime) ReadNewImageFromCache(int userId)
         {
-            int waitTimeToReadFromCache = _imageFromCacheService.WaitBeforeGettingNextImage(userId: userId, timeRequested: _lastCacheAccess);
-            LogRequestAccessToCache(waitTimeToReadFromCache, userId);
+            _imageFromCacheService.WaitBeforeGettingNextImage(userId: userId, timeRequested: GetLastCacheAccess(userId));
 
             DateTime requestTime = _dateTimeProvider.DateTimeNow;
             byte[] imageByteArray = _imageFromCacheService.GetNewImageAsByteArray(userId: userId, timeRequested: requestTime);
@@ -100,20 +116,20 @@ namespace IpWebCam3.Services.ImageServices
         {
             LogBeforeReadingFromProvider(requestTime, userId);
 
-            byte[] imageByteArray = GetImageAsByteArrayFromWebCam(userUtc);
-            _lastCacheAccess = _dateTimeProvider.DateTimeNow;
+            byte[] imageByteArray = GetImageAsByteArrayFromWebCam(userId, userUtc);
+            UpdateLastCacheAccess(userId, _dateTimeProvider.DateTimeNow);
 
             LogAfterReadingFromProvider(userId);
 
             _imageFromCacheService.UpdateCachedImage(imageByteArray: imageByteArray,
-                                                 userId: userId,
-                                                 timeUpdated: _lastCacheAccess);
+                userId: userId,
+                timeUpdated: GetLastCacheAccess(userId));
             LogDurationReadingFromProvider(requestTime, userId);
 
             return imageByteArray;
         }
 
-        private byte[] GetImageAsByteArrayFromWebCam(string userUtc)
+        private byte[] GetImageAsByteArrayFromWebCam(int userId, string userUtc)
         {
             Image image;
 
@@ -125,7 +141,7 @@ namespace IpWebCam3.Services.ImageServices
             {
                 image = Image.FromFile(_imageErrorLogoUrl);
 
-                _logger?.LogError($"{nameof(GetImageAsByteArrayFromWebCam)}: {ex.Message}");
+                _logger?.LogError($"{nameof(GetImageAsByteArrayFromWebCam)}: {ex.Message}", userId);
             }
 
             byte[] imageByteArray = ImageHelper.ConvertImageToByteArray(image);
@@ -133,9 +149,7 @@ namespace IpWebCam3.Services.ImageServices
             return imageByteArray;
         }
 
-
         private static readonly object LockCanReadImageFromWebCam = new object();
-
         // Only one user can be in the role of *cache updater* and has permission to connect to the webCam.
         // The others can only read images from cache (Better performance, less traffic)
         public bool CanReadImageFromWebCam(int userId, DateTime requestTime)
@@ -165,81 +179,93 @@ namespace IpWebCam3.Services.ImageServices
             return canReadFromWebCam;
         }
 
+        private static readonly object LockCacheUpdaterOverdue = new object();
+
         private bool IsCurrentCacheUpdaterUserOverdue(DateTime requestTime)
         {
-            return requestTime.Subtract(_cacheUpdaterInfo.LastUpdate).TotalMilliseconds >
-                                        _cacheUpdaterExpirationMilliSec;
+            lock (LockCacheUpdaterOverdue)
+            {
+                return
+                  requestTime.Subtract(_cacheUpdaterInfo.LastUpdate).TotalMilliseconds >
+                        _cacheUpdaterExpirationMilliSec;
+            }
         }
 
 
+
+        private void LogNewImageReadFromCache(int userId, DateTime requestTime)
+        {
+            string msg = "From cache (3) = Read image.".PadRight(50) 
+                         + "LastUpdate: " +
+                         DateTimeFormatter.ConvertTimeToCompactString(_imageFromCacheService.CacheLastUpdate, true)
+                         + ".   Request by UserId: " + userId.GetFormattedUserId()
+                         + "    lastCacheAccess "
+                         + DateTimeFormatter.ConvertTimeToCompactString(GetLastCacheAccess(userId), true)
+                         + " => "
+                         + DateTimeFormatter.ConvertTimeToCompactString(requestTime, true);
+
+            _logger?.LogCacheStat(msg, userId);
+        }
 
         private void LogCacheUpdaterRejected(int userId, DateTime lastUpdate, DateTime requestTime)
         {
             (string strPrevTime, string strRequestTime) = GetLogDateTimeValuesAsStrings(lastUpdate, requestTime);
 
-            string msg = "Cache Updater = *REJECTED*. userId: " + _cacheUpdaterInfo.UserId + ",  time: " + strPrevTime;
-            string reqBy = " .Requested by userId " + userId + " , at " + strRequestTime;
-            _logger?.LogCacheStat(msg + reqBy);
+            string msg = "CacheUpdater *REJECTED*   UserId: " + _cacheUpdaterInfo.UserId.GetFormattedUserId() + " ,  time: " + strPrevTime;
+            string reqBy = " .         Request by UserId: " + userId.GetFormattedUserId() + " , at " + strRequestTime;
+            _logger?.LogCacheStat(msg + reqBy, userId);
         }
 
         private void LogCacheUpdaterReplaced(int userId, DateTime lastUpdate, DateTime requestTime)
         {
             (string strPrevTime, string strRequestTime) = GetLogDateTimeValuesAsStrings(lastUpdate, requestTime);
 
-            string msg = "Cache Updater = *REPLACED* userId: " + _cacheUpdaterInfo.UserId + ",  time: " +
-                  strPrevTime + " with userId: " + userId + ", time: " + strRequestTime;
-            _logger?.LogCacheStat(msg);
+            string msg = "CacheUpdater *REPLACED*  UserId: " + _cacheUpdaterInfo.UserId.GetFormattedUserId() + " ,  time: " +
+                  strPrevTime + " with UserId: " + userId.GetFormattedUserId() + " , time: " + strRequestTime;
+            _logger?.LogCacheStat(msg, userId);
         }
 
         private void LogCacheUpdaterRenewed(int userId, DateTime lastUpdate, DateTime requestTime)
         {
             (string strPrevTime, string strRequestTime) = GetLogDateTimeValuesAsStrings(lastUpdate, requestTime);
 
-            string msg = "Cache Updater = *RENEWED*: userId: " + userId + ", previous time: " + strPrevTime +
+            string msg = "CacheUpdater *RENEWED*   UserId: " + userId.GetFormattedUserId() + " , previous time: " + strPrevTime +
                   ", new time: " + strRequestTime;
-            _logger?.LogCacheStat(msg);
+            _logger?.LogCacheStat(msg, userId);
         }
 
-        private void LogReadOldImageFromCache(int UserId)
+        private void LogReadOldImageFromCache(int userId)
         {
-            string statusMessage = "From cache  . OLD IMAGE until cache is updated" +
-                                   " Requested by = userId: " + UserId
-                                   + ", LastUpdate: " + DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true);
-            _logger?.LogCacheStat(statusMessage);
+            string statusMessage = "From cache  . OLD IMAGE until cache is updated"
+                                   + " ,  LastUpdate: " + DateTimeFormatter.ConvertTimeToCompactString(GetLastCacheAccess(userId), true) //(_lastCacheAccess, true) //
+                                   + "    Request by UserId: " + userId.GetFormattedUserId();
+            _logger?.LogCacheStat(statusMessage, userId);
         }
 
-        private void LogBeforeReadingFromProvider(DateTime requestTime, int UserId)
+        private void LogBeforeReadingFromProvider(DateTime requestTime, int userId)
         {
-            _logger?.LogCacheStat(
-                "[1]--Start  reading image from source. UserId: " + UserId + ", time: " +
-                DateTimeFormatter.ConvertTimeToCompactString(requestTime, true));
+            string msg = "[1]--Start reading image from source.".PadRight(84) +
+                         " Request by UserId: " + userId.GetFormattedUserId() + " , at " +
+                      DateTimeFormatter.ConvertTimeToCompactString(requestTime, true);
+            _logger?.LogCacheStat(msg, userId);
         }
 
-        private void LogAfterReadingFromProvider(int UserId)
+        private void LogAfterReadingFromProvider(int userId)
         {
-            _logger?.LogCacheStat(
-                "[2]--Finish reading image from source. UserId: " + UserId + ", time: " +
-                DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true));
+            string msg = "[2]--Finish reading image from source. " +
+                         "                                              " +
+                         "Request by UserId: " + userId.GetFormattedUserId() + " , at " +
+                         DateTimeFormatter.ConvertTimeToCompactString(GetLastCacheAccess(userId), true);
+            _logger?.LogCacheStat(msg, userId);
         }
 
         private void LogDurationReadingFromProvider(DateTime requestTime, int userId)
         {
-            _logger?.LogCacheStat("[3]--Duration for userId " + userId +
-                                    " to retrieve image from source and update cache [milliseconds] = "
-                                    + (long)_lastCacheAccess.Subtract(requestTime).TotalMilliseconds);
-        }
-
-
-        private void LogRequestAccessToCache(int waitTime, int userId)
-        {
-            var cacheReaderDelay = (int)_lastCacheAccess.Subtract(_imageFromCacheService.CacheLastUpdate).TotalMilliseconds;
-            _logger?.LogCacheStat("Request access to cache. " +
-                                  "                     " +
-                                  $"LastUpdate: {DateTimeFormatter.ConvertTimeToCompactString(_imageFromCacheService.CacheLastUpdate, true)}.  " +
-                                  $"lastCacheAccess  {DateTimeFormatter.ConvertTimeToCompactString(_lastCacheAccess, true)}. " +
-                                  $"Delta T: {cacheReaderDelay} ms. " +
-                                  $"Waited {waitTime} ms. " +
-                                  $"userId: {userId}  ");
+            DateTime lastCacheAccess = GetLastCacheAccess(userId);
+            string msg = "[3]--Duration for        UserId: " + userId.GetFormattedUserId() +
+                         " to retrieve image from source and update cache = "
+                         + (long)lastCacheAccess.Subtract(requestTime).TotalMilliseconds + " ms";
+            _logger?.LogCacheStat(msg, userId);
         }
 
         private static (string strPrevTime, string strRequestTime) GetLogDateTimeValuesAsStrings(

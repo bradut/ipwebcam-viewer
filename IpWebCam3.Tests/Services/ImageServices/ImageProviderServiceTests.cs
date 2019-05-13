@@ -1,5 +1,5 @@
-﻿using IpWebCam3.Helpers;
-using IpWebCam3.Helpers.ImageHelpers;
+﻿using IpWebCam3.Helpers.ImageHelpers;
+using IpWebCam3.Helpers.Logging;
 using IpWebCam3.Helpers.TimeHelpers;
 using IpWebCam3.Models;
 using IpWebCam3.Services.ImageServices;
@@ -51,9 +51,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
                 dateTimeProvider: dateTimeService,
                 logger: _logger,
                 cacheUpdaterExpirationMilliSec: 1000,
-                imageErrorLogoUrl: "some_value",
-                cacheUpdaterInfo: null
-                )
+                cacheUpdaterInfo: null, imageErrorLogoUrl: "some_value")
             );
         }
 
@@ -68,9 +66,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
                 dateTimeProvider: _dateTimeProvider,
                 logger: _logger,
                 cacheUpdaterExpirationMilliSec: expirationValueMilliSec,
-                imageErrorLogoUrl: "some_value",
-                cacheUpdaterInfo: null
-                )
+                cacheUpdaterInfo: null, imageErrorLogoUrl: "some_value")
             );
         }
 
@@ -129,9 +125,11 @@ namespace IpWebCam3.Tests.Services.ImageServices
             // Arrange
             const string userUtc = "some_UTC_value";
             _dateTimeProvider.DateTimeNow.Returns(new DateTime(2019, 05, 01, 15, 30, 30, 100));
-            _imageFromCacheService.WaitBeforeGettingNextImage(Arg.Any<int>(), Arg.Any<DateTime>()).Returns(0);
+            (int waitTimeMilliSec, string reason) valueTuple = (0, ""); 
+            _imageFromCacheService.WaitBeforeGettingNextImage(Arg.Any<int>(), Arg.Any<DateTime>()).Returns(valueTuple);
 
             _imageFromCacheService.GetNewImageAsByteArray(Arg.Any<int>(), Arg.Any<DateTime>()).Returns((byte[])null);
+
             _cacheUpdater.Update(userId: cacheUpdaterUserId, lastUpdate: DateTime.MinValue);
 
             var imageFromWebCam = new Bitmap(1, 1);
@@ -162,7 +160,8 @@ namespace IpWebCam3.Tests.Services.ImageServices
             // Arrange
             const string userUtc = "some_UTC_value";
             _dateTimeProvider.DateTimeNow.Returns(new DateTime(2019, 05, 01, 15, 30, 30, 100));
-            _imageFromCacheService.WaitBeforeGettingNextImage(Arg.Any<int>(), Arg.Any<DateTime>()).Returns(0);
+            (int waitTimeMilliSec, string reason) valueTuple = (0, "");
+            _imageFromCacheService.WaitBeforeGettingNextImage(Arg.Any<int>(), Arg.Any<DateTime>()).Returns(valueTuple);
 
             _imageFromCacheService.GetNewImageAsByteArray(Arg.Any<int>(), Arg.Any<DateTime>()).Returns((byte[])null);
             var currentImageArrayFromCache = new byte[20];
@@ -201,9 +200,7 @@ namespace IpWebCam3.Tests.Services.ImageServices
                 dateTimeProvider: _dateTimeProvider,
                 logger: _logger,
                 cacheUpdaterExpirationMilliSec: _cacheUpdaterExpirationMilliSec,
-                imageErrorLogoUrl: "some_value",
-                cacheUpdaterInfo: _cacheUpdater
-                );
+                cacheUpdaterInfo: _cacheUpdater, imageErrorLogoUrl: "some_value");
         }
 
         private DateTime RequestTime(int delayMilliSec)
