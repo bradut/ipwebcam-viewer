@@ -113,7 +113,7 @@ namespace IpWebCam3.Helpers.Configuration
             UserPtzCmdLogPath = AppRootDir + (logUserPtzCmdPath ?? @"\App_Data\logs\userPtz.txt");
             CacheStatsLogPath = AppRootDir + (logCacheStatsPath ?? @"\App_Data\logs\cacheStats.txt");
             SnapShotImagePath = AppRootDir + (snapShotImagePath ?? @"\App_Data\outputimages\");
-            ErrorImageLogPath = AppRootDir + (imageErrorLogoPath ?? @"images\earth_hd_1.jpg");
+            ErrorImageLogPath = AppRootDir + (imageErrorLogoPath ?? @"\images\earth_hd_1.jpg");
 
             CameraFps = int.TryParse(System.Configuration.ConfigurationManager.AppSettings["CameraFPS"], out int cameraFps)
                 ? cameraFps
