@@ -7,7 +7,7 @@ namespace IpWebCam3.Services
     /// <summary>
     /// Http Basic Authentication Bypass Service
     /// </summary>
-    public class HttpBasicAuthenticationBypassService
+    public static class HttpBasicAuthenticationBypassService
     {
         // C# Http Basic Authentication Bypass
         // https://stackoverflow.com/questions/8228393/c-sharp-http-basic-authentication-bypass

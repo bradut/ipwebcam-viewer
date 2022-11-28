@@ -9,9 +9,9 @@ namespace IpWebCam3.Services.PtzServices
     /// Execute PTZ (Pan Tilt Zoom) commands by calling camera's CGI API (not ONVIF API)
     /// http://tutoriels.domotique-store.fr/content/52/293/fr/api-des-cameras-ip-wanscam-onvif-hw-nouvelle-generation.htmlk 
     /// </summary>
-    public class PtzCgiService
+    public static class PtzCgiService
     {
-        public struct PtzCommands
+        private struct PtzCommands
         {
             // Mobile commands: Some IP WebCams use these:
             public const string MobileYtUp = "ytup";
@@ -37,7 +37,7 @@ namespace IpWebCam3.Services.PtzServices
             return ExecutePtzCommand(ptzCmd, ptzParameters, connectionInfo.Username, connectionInfo.Password, connectionInfo.Url, connectionInfo.Port);
         }
 
-        public static Result ExecutePtzCommand(string ptzCmd, string ptzParameters, string webCamUsername, string webCamPassword, string url, int port)
+        private static Result ExecutePtzCommand(string ptzCmd, string ptzParameters, string webCamUsername, string webCamPassword, string url, int port)
         {
             string ptzCmdCgiPath;
 

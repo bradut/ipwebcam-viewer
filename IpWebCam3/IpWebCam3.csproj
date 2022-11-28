@@ -153,6 +153,9 @@
     <Compile Include="Services\PtzServices\PtzCgiService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\FTPDeploy to DimaSoft.ca Profile.pubxml" />
     <None Include="Properties\PublishProfiles\WebDeploy to DimaSoft.ca Profile.pubxml" />
