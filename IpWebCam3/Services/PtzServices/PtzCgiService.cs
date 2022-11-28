@@ -76,7 +76,7 @@ namespace IpWebCam3.Services.PtzServices
         // Create the path of the CGI command. Example: "cgi-bin/hi3510/ytup.cgi"
         private static string CreatePtzCmdCgiPath(string ptzCmd, string ptzParameters)
         {
-            if (string.IsNullOrWhiteSpace(ptzCmd)) throw new ArgumentException("PTZ cmd is null or empty");
+            if (string.IsNullOrWhiteSpace(ptzCmd)) throw new ArgumentNullException(nameof(ptzCmd),"PTZ cmd is null or empty");
 
             string ptzCmdCgiPath;
 

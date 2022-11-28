@@ -15,7 +15,7 @@ namespace IpWebCam3.Helpers.Configuration
 
         private static readonly object LockMutex = new object();
 
-        public readonly string AppRootDir =
+        private readonly string AppRootDir =
             System.Web.Hosting.HostingEnvironment.MapPath(HttpRuntime.AppDomainAppVirtualPath);
 
         public static AppConfiguration Instance
@@ -47,15 +47,15 @@ namespace IpWebCam3.Helpers.Configuration
 
         public string CacheStatsLogPath { get; private set; }
 
-        public string SnapShotImagePath { get; set; }
+        public string SnapShotImagePath { get; private set; }
 
-        public string ErrorImageLogPath { get; set; }
+        public string ErrorImageLogPath { get; private set; }
 
-        public int CameraFps { get; set; }
+        public int CameraFps { get; private set; }
 
-        public int CacheLifeTimeMilliSec { get; set; }
+        public int CacheLifeTimeMilliSec { get; private set; }
 
-        public int CacheUpdaterExpirationMilliSec { get; set; }
+        public int CacheUpdaterExpirationMilliSec { get; private set; }
 
 
         public bool IsValid

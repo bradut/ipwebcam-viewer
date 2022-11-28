@@ -18,7 +18,7 @@ namespace IpWebCam3.Services.ImageServices
     /// </summary>
     public class ImageFromCacheService : IImageFromCacheService
     {
-        private readonly CacheUpdateService _cacheUpdateService;
+        private CacheUpdateService _cacheUpdateService;
 
         // Do not read from cache images older than this duration:
         private readonly int _cacheLifeTimeMilliSec;
@@ -34,21 +34,28 @@ namespace IpWebCam3.Services.ImageServices
         public ImageFromCacheService(CacheUpdateService cacheUpdateService,
                                      IMiniLogger logger = null,
                                      int cacheLifeTimeMilliSec = 2001,
-                                     int framesPerSecond = 5
-
-            )
+                                     int framesPerSecond = 5)
         {
-            _cacheUpdateService = cacheUpdateService ?? throw new ArgumentNullException(nameof(cacheUpdateService));
-            if (cacheLifeTimeMilliSec < MinValueCacheLifeTimeMilliSec) throw new ArgumentException(
-                        $"{nameof(cacheLifeTimeMilliSec)} too small: " +
-                        $"{cacheLifeTimeMilliSec} < {MinValueCacheLifeTimeMilliSec}");
-            if (framesPerSecond < MinValueFramesPerSecond) throw new ArgumentException(
-                        $"{nameof(framesPerSecond)} too small: " +
-                        $"{framesPerSecond} < {MinValueFramesPerSecond}");
+            ValidateInputData(cacheUpdateService, cacheLifeTimeMilliSec, framesPerSecond);
 
             _cacheLifeTimeMilliSec = cacheLifeTimeMilliSec;
             _framesPerSecond = framesPerSecond;
             _logger = logger;
+        }
+
+        private void ValidateInputData(CacheUpdateService cacheUpdateService, int cacheLifeTimeMilliSec, int framesPerSecond)
+        {
+            _cacheUpdateService = cacheUpdateService ?? throw new ArgumentNullException(nameof(cacheUpdateService));
+
+            if (cacheLifeTimeMilliSec < MinValueCacheLifeTimeMilliSec)
+                throw new ArgumentException(
+                    $"{nameof(cacheLifeTimeMilliSec)} too small: " +
+                    $"{cacheLifeTimeMilliSec} < {MinValueCacheLifeTimeMilliSec}");
+
+            if (framesPerSecond < MinValueFramesPerSecond)
+                throw new ArgumentException(
+                    $"{nameof(framesPerSecond)} too small: " +
+                    $"{framesPerSecond} < {MinValueFramesPerSecond}");
         }
 
 
@@ -110,15 +117,16 @@ namespace IpWebCam3.Services.ImageServices
                 waitTimeMilliSec = 0;
                 reason = "CacheUpdater";
             }
-
             else if (lastCacheUpdate >= timeRequested)
             {
                 waitTimeMilliSec = 0;
                 reason = "Old request";
             }
-
-            else waitTimeMilliSec = TimeToWaitUntilNextImageIsAvailable(timeRequested, lastCacheUpdate);
-
+            else
+            {
+                waitTimeMilliSec = TimeToWaitUntilNextImageIsAvailable(timeRequested, lastCacheUpdate);
+            }
+            
             LogRequestAccessToCache(userId, timeRequested, lastCacheUpdate, waitTimeMilliSec, reason);
 
             System.Threading.Thread.Sleep(waitTimeMilliSec);

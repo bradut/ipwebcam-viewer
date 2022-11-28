@@ -3,7 +3,9 @@
 namespace IpWebCam3.Models
 {
     /// <summary>
-    /// CacheUpdater contains the ID of the user in charge with reading images from the WebCam and updating the cache
+    /// CacheUpdater contains the ID of the USER IN CHARGE with reading images from the WebCam and updating the cache
+    /// Update: 2022-11-28: This is actually an implementation of the Leader Election pattern as I found out 3 years later
+    /// https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election
     /// </summary>
     public class CacheUpdaterInfo
     {
