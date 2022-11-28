@@ -8,7 +8,7 @@ This project allows viewing images from an IP WebCam, as well as controlling its
 
 ## Features:
 - Fetches jpeg images from camera 
-- Controls the camera: Pan-Tilt-Zoom (PTZ)
+- Controls camera's positioning and zooming: Pan-Tilt-Zoom (PTZ)
 
 ## Implementation details:
 - Programming: C#/WebAPI/JavaScript
