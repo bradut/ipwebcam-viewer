@@ -1,4 +1,4 @@
-# IP WebcCam-viewer
+# IP WebCam-viewer
 Web Viewer and controller for my IP WebCam.
 
 [![Build status](https://dev.azure.com/bradut/IP-WebCam/_apis/build/status/IP-WebCam-ASP.NET-CI)](https://dev.azure.com/bradut/IP-WebCam/_build/latest?definitionId=11)
