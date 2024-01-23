@@ -6,68 +6,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <link rel="stylesheet" href="css/StyleSheet.css?2019-04-15" />
+    <style>
+        /*Slider style*/
+        datalist {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            writing-mode: vertical-lr;
+            width: 100%;
+        }
+
+        option {
+            padding: 0;
+            text-align: center;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 0;
+        }
+    </style>
 </head>
 
 <body onload="load()">
 
     <div id="mainDiv">
-        <!--"buttonDivOut"-->
-        <div id="imageDiv" style="width: 95%; margin-left: auto; margin-right: auto; margin-top: 0px;">
 
+        <!--"buttonDivOut"-->
+        <div id="imageDiv" style="width: 95%; margin-left: auto; margin-right: auto; margin-top: 0;">
+
+            <!-- Graphic PTZ controls: arrows, circle -->
             <div id="ipcam_ptz_dir" class="menuOverTheImage">
-                <table width="auto" cellspacing="0" border="0" align="center">
+                <table width="auto">
                     <tbody>
                         <tr>
                             <td></td>
                             <td>
                                 <a onmouseout=""
-                                    onmouseover=""
-                                    onmousedown="ptzCmdSubmit('up')"
-                                    onmouseup="ptzCmdSubmit('stop')">
-                                    <img src="images/ptzUp.png" name="up" id="up" alt="up" width="38" height="38" border="0"/>
+                                   onmouseover=""
+                                   onmousedown="ptzCmdSubmit('up')"
+                                   onmouseup="ptzCmdSubmit('stop')">
+                                    <img src="images/ptzUp.png" id="up" alt="up" width="38" height="38" />
                                 </a>
                             </td>
                             <td>
-                                <a
-                                    onmousedown="ptzCmdSubmit('zoomin')"
-                                    onmouseup="ptzCmdSubmit('stop')">
-                                    <img src="images/ptzZoomIn.png"></a></td>
+                                <a onmousedown="ptzCmdSubmit('zoomin')"
+                                   onmouseup="ptzCmdSubmit('stop')">
+                                    <img src="images/ptzZoomIn.png" alt="zoom-in">
+                                </a>
+                            </td>
                         </tr>
                         <tr>
                             <td>
                                 <a onmouseout=""
-                                    onmousedown="ptzCmdSubmit('left')"
-                                    onmouseup="ptzCmdSubmit('stop')"
-                                    onmouseover="">
-                                    <img src="images/ptzLeft.png" name="left" id="left" alt="left" width="38" height="38" border="0"/>
-                                </a></td>
+                                   onmousedown="ptzCmdSubmit('left')"
+                                   onmouseup="ptzCmdSubmit('stop')"
+                                   onmouseover="">
+                                    <img src="images/ptzLeft.png" id="left" alt="left" width="38" height="38" />
+                                </a>
+                            </td>
                             <td>
                                 <a onclick="ptzCmdSubmit('goto', 'preset', '-number=0')">
-                                    <img src="images/ptzStartPoint.png" name="home" id="center" alt="center" width="38" height="38" border="0"/>
-                                </a></td>
+                                    <img src="images/ptzStartPoint.png" id="center" alt="center" width="38" height="38" />
+                                </a>
+                            </td>
                             <td>
                                 <a onmouseout=""
-                                    onmousedown="ptzCmdSubmit('right')"
-                                    onmouseup="ptzCmdSubmit('stop')"
-                                    onmouseover="">
-                                    <img src="images/ptzRight.png" name="right" id="right" alt="right" width="38" height="38" border="0"/>
-                                </a></td>
+                                   onmousedown="ptzCmdSubmit('right')"
+                                   onmouseup="ptzCmdSubmit('stop')"
+                                   onmouseover="">
+                                    <img src="images/ptzRight.png" id="right" alt="right" width="38" height="38" />
+                                </a>
+                            </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
                                 <a onmouseout=""
-                                    onmousedown="ptzCmdSubmit('down')"
-                                    onmouseup="ptzCmdSubmit('stop')"
-                                    onmouseover="">
-                                    <img src="images/ptzDown.png" name="down" id="down" alt="down" width="38" height="38" border="0"/>
-                                </a></td>
+                                   onmousedown="ptzCmdSubmit('down')"
+                                   onmouseup="ptzCmdSubmit('stop')"
+                                   onmouseover="">
+                                    <img src="images/ptzDown.png" id="down" alt="down" width="38" height="38" />
+                                </a>
+                            </td>
                             <td>
 
-                                <a
-                                    onmousedown="ptzCmdSubmit('zoomout')"
-                                    onmouseup="ptzCmdSubmit('stop')">
-                                    <img src="images/ptzZoomOut.png"/>
+                                <a onmousedown="ptzCmdSubmit('zoomout')"
+                                   onmouseup="ptzCmdSubmit('stop')">
+                                    <img src="images/ptzZoomOut.png" alt="zoom-out" />
                                 </a>
 
                             </td>
@@ -75,8 +101,11 @@
                     </tbody>
                 </table>
             </div>
-            <img id="img1" border="0" alt="WebCam Image" src="images/earth_hd_2.jpg" title="" style="width: 100%" />
 
+            <!--Default image displayed until streaming starts-->
+            <img id="img1" alt="WebCam Image" src="images/earth_hd_2.jpg" title="" style="width: 100%" />
+
+            <!-- Classic PTZ controls: buttons -->
             <div id="buttonDivOut" style="text-align: center; visibility: visible;">
                 <div id="buttonDiv" style="margin-left: auto; margin-right: auto;">
 
@@ -99,8 +128,81 @@
                         Refresh
                     </button>
                 </div>
+
+
+                <!-- Slider to access the preset points -->
+                <div id="divPresetPointsSlider" style="width: 100%">
+                    <script>
+
+                        const min = 0;
+                        const max = 19;
+
+                        function createRangeInput() {
+                            const rangeInput = document.createElement("input");
+                            rangeInput.type = "range";
+                            rangeInput.step = "1";
+                            rangeInput.min = min; // w/o min & max the ticks are not displayed properly
+                            rangeInput.max = max;
+                            rangeInput.defaultValue = "0";
+                            rangeInput.list = "markers";
+                            rangeInput.style.width = "100%";
+                            rangeInput.style.background = "transparent";
+                            rangeInput.style.border = "none";
+
+                            return rangeInput;
+                        }
+
+                        function createDatalist() {
+                            const datalist = document.createElement("datalist");
+                            datalist.id = "markers";
+
+                            // Add tick marks to the datalist
+                            for (let i = min; i <= max; i++) {
+                                const option = document.createElement("option");
+                                option.value = (i).toString();
+                                option.label = (i + 1).toString();
+                                datalist.appendChild(option);
+                            }
+
+                            return datalist;
+                        }
+
+                        var rangeInput = createRangeInput();
+                        var datalist = createDatalist();
+
+                        document.getElementById("buttonDivOut").appendChild(datalist);
+                        rangeInput.setAttribute("list", "markers");
+
+                        rangeInput.oninput = function () {
+                            sendSelectedValueA(this.value);
+                        };
+
+                        function sendSelectedValueA(value) {
+                            const datalist = document.getElementById("markers");
+                            const options = datalist.options;
+                            const validValues = Array.from(options).map(option => option.value);
+
+                            if (validValues.includes(value)) {
+                                ptzCmdSubmit("goto", "preset", "-number=" + value);
+                            } else {
+                                console.log("Invalid value selected " + value);
+                            }
+                        }
+
+                        document.getElementById("buttonDivOut").appendChild(rangeInput);
+                    </script>
+
+                </div>
+                <!-- End of Slider to access the preset points -->
+
+
             </div>
+            <!-- buttonDivOut -->
+
+
         </div>
+        <!-- imageDiv -->
+
     </div>
 
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
@@ -155,17 +257,17 @@
             // load next image - will trigger update()
             //https://stackoverflow.com/questions/10802312/display-png-image-as-response-to-jquery-ajax-request
 
-            var imgUrl = imgSrc + getUtcTime();
-            var oReq = new XMLHttpRequest();
-            oReq.open("get", imgUrl, true);
-            oReq.responseType = "blob";
-            oReq.onload = function () {
-                var blob = oReq.response;
-                var imgSrcFromBlob = URL.createObjectURL(blob);
+            const imgUrl = imgSrc + getUtcTime();
+            var httpRequest = new XMLHttpRequest();
+            httpRequest.open("get", imgUrl, true);
+            httpRequest.responseType = "blob";
+            httpRequest.onload = function () {
+                const blob = httpRequest.response;
+                const imgSrcFromBlob = URL.createObjectURL(blob);
                 img.src = imgSrcFromBlob;
                 window.URL.revokeObjectURL(imgSrc);
             };
-            oReq.send(null);
+            httpRequest.send(null);
         }
 
         function takeError(exception) {
@@ -218,7 +320,7 @@
 
             ptz_command = command;
             ptz_params = parameters;
-            
+
             const ptzUrlWithParams = ptzUrl + getUtcTime() + "?ptz=" + ptz_command + "&prms=" + ptz_params;
             var ptzResult;
 
@@ -232,7 +334,9 @@
                     ptzResult = 'Error: ' + err + ', jqXHR: ' + jqXHR + " textStatus: " + textStatus;
                 });
 
-            console.LOG2E(ptzResult);
+            if (ptzResult !== undefined) {
+                console.log(ptzResult);
+            }
 
             // reset ptz data
             ptz_command = "";

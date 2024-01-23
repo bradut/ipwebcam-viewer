@@ -29,6 +29,9 @@ namespace IpWebCam3.Controllers
                                                                             .ToList();
 
             string ptzCommand = allUrlKeyValues.FirstOrDefault(k => k.Key == "ptz").Value;
+
+            //ToDo: This only reads the first parameter.  May need to read more parameters and pass them to the CGI API.
+            // See how they the params are being passed by the JavaScript in the web page.
             string ptzParameters = allUrlKeyValues.FirstOrDefault(k => k.Key == "prms").Value;
 
             if (string.IsNullOrWhiteSpace(ptzCommand))
@@ -38,7 +41,7 @@ namespace IpWebCam3.Controllers
 
             Result result = PtzCgiService.ExecutePtzCommand(ptzCmd: ptzCommand, ptzParameters: ptzParameters,
                                                             connectionInfo: AppConfiguration.CameraConnectionInfo);
-            if (result.Error != null)
+            if (result.Error == null)
             {
                 Logger?.LogError(result.Message, UserId, UserIp);
                 return new HttpResponseMessage(result.StatusCode);
