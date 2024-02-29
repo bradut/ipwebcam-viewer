@@ -104,29 +104,8 @@
             <!--Default image displayed until streaming starts-->
             <img id="img1" alt="WebCam Image" src="images/earth_hd_2.jpg" title="" style="width: 100%" />
 
-            <!-- Classic PTZ controls: buttons -->
+            <!-- Additional PTZ controls: -->
             <div id="buttonDivOut" style="text-align: center; visibility: visible;">
-                <div id="buttonDiv" style="margin-left: auto; margin-right: auto;">
-
-                    <input type="button" value="⇈" name="B3" onclick="ptzUpSubmit()" />
-                    <input type="button" value="⇊" name="B2" onclick="ptzDownSubmit()" />
-
-                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-
-                    <input type="button" value="⇇" name="B1" onclick="ptzLeftSubmit()" />
-                    <input type="button" value="⇉" name="B0" onclick="ptzRightSubmit()" />
-
-                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-
-                    <input type="button" value="&#43;" name="B0" onclick="ptzZoomIn()" />
-                    <input type="button" value="&#8722;" name="B0" onclick="ptzZoomOut()" />
-
-                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-
-                    <button type="button" name="B4" onclick="location.reload()">
-                        Refresh
-                    </button>
-                </div>
 
 
                 <!-- Slider to access the preset points -->
@@ -193,6 +172,29 @@
 
                 </div>
                 <!-- End of Slider to access the preset points -->
+                <!-- Classic PTZ controls: buttons -->
+                <div id="buttonDiv" style="margin-left: auto; margin-right: auto;">
+
+                    <input type="button" value="⇈" name="B3" onclick="ptzUpSubmit()" />
+                    <input type="button" value="⇊" name="B2" onclick="ptzDownSubmit()" />
+
+                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+                    <input type="button" value="⇇" name="B1" onclick="ptzLeftSubmit()" />
+                    <input type="button" value="⇉" name="B0" onclick="ptzRightSubmit()" />
+
+                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+                    <input type="button" value="&#43;" name="B0" onclick="ptzZoomIn()" />
+                    <input type="button" value="&#8722;" name="B0" onclick="ptzZoomOut()" />
+
+                    <span style="width: 30px">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+                    <button type="button" name="B4" onclick="location.reload()">
+                        Refresh
+                    </button>
+                </div>
+                <!-- End of Classic PTZ controls: buttons -->
 
 
             </div>
